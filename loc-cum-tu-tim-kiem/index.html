@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lọc Cụm Từ Tìm Kiếm (Search Terms Intelligence) | AdsInsight PRO</title>
+  <meta name="description" content="Bộ công cụ phân tích dữ liệu Search Terms, bóc tách cấu trúc URL tiềm năng, quét N-Gram chặn từ khóa rác và tối ưu tài khoản Google Ads.">
+  <link rel="icon" type="image/png" href="../shared/img/favicon.png?v=3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/css/style.css">
+  <!-- PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Navigation Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h2>AdsInsight<span class="pro-badge">PRO</span></h2>
+          <p>Google Ads Analytics Hub</p>
+        </div>
+        <button type="button" class="sidebar-toggle-btn" id="btnToggleSidebar" title="Thu gọn / Mở rộng thanh điều hướng">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="../index.html" class="nav-item" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Trang Chủ Hub</span>
+        </a>
+        <a href="index.html" class="nav-item active" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span>Lọc Cụm Từ Tìm Kiếm</span>
+        </a>
+        <a href="../nap-bao-cao-affiliate/index.html" class="nav-item" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          <span>Nạp Báo Cáo Affiliate</span>
+        </a>
+        <a href="../phan-tich-san-pham-shopee/index.html" class="nav-item" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span>Phân Tích Sản Phẩm Shopee</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-card">
+          <div class="pulse-indicator"></div>
+          <div>
+            <div class="text-sm font-semibold">100% Offline & Bảo mật</div>
+            <div class="text-xs text-muted">Dữ liệu xử lý trên trình duyệt của bạn</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Action Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 id="pageTitle">Lọc Cụm Từ Tìm Kiếm (Search Terms Intelligence)</h1>
+          <p id="pageSubtitle" class="text-muted">Phân tích đa tài khoản/chiến dịch, bóc tách cấu trúc URL tiềm năng và quét N-Gram chặn từ khóa rác</p>
+        </div>
+      </header>
+
+      <!-- TAB: LỌC CỤM TỪ TÌM KIẾM (SEARCH TERMS) -->
+      <section id="tab-search-terms" class="tab-content active">
+        <!-- Top Control Bar: Upload, Vertical Tag & Multi-Account/Campaign Selector -->
+        <div class="st-control-panel">
+          <div class="st-control-row">
+            <div class="st-upload-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <label class="btn btn-primary file-upload-btn" style="cursor: pointer;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                Tải file CSV Search Terms
+                <input type="file" id="stFileInput" accept=".csv, .tsv, .txt" multiple hidden>
+              </label>
+
+              <!-- Nút Nạp Dữ Liệu Mẫu Demo -->
+              <button class="btn btn-secondary btn-sm" id="btnLoadSampleDemo" title="Nạp nhanh file dữ liệu mẫu để trải nghiệm đầy đủ các tính năng">
+                📊 Nạp Dữ Liệu Mẫu Demo
+              </button>
+
+              <!-- Nút Xóa Dữ Liệu Đã Nạp -->
+              <button class="btn btn-secondary btn-sm" id="btnClearUploadedFiles" title="Xóa toàn bộ dữ liệu file đã nạp để làm mới lại từ đầu" style="display: none; color: #f87171; border-color: rgba(239, 68, 68, 0.35);">
+                🗑️ Xóa file đã nạp
+              </button>
+
+              <span id="stFileStatusBadge" class="text-xs text-muted" style="align-self: center; margin-left: 6px;"></span>
+            </div>
+
+            <!-- Vertical / Product Tag Selector -->
+            <div class="st-product-selector">
+              <span class="text-xs text-muted">Sản phẩm / Nền tảng:</span>
+              <div class="product-pills" id="productPillContainer">
+                <button class="pill-btn active" data-product="auto">✨ Tự động nhận diện</button>
+                <button class="pill-btn" data-product="Shopee">Shopee</button>
+                <button class="pill-btn" data-product="Traveloka">Traveloka</button>
+                <button class="pill-btn" data-product="Trip">Trip.com</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vùng kéo thả File Dropzone trực quan -->
+          <div style="display: flex; gap: 10px; align-items: stretch; margin-top: 8px; margin-bottom: 4px;">
+            <div id="stDropZone" class="drop-zone" style="flex: 1; padding: 14px; border-width: 2px; border-style: dashed; border-color: rgba(255,255,255,0.15); border-radius: var(--radius-sm); text-align: center; cursor: pointer; background: rgba(15, 23, 42, 0.4);">
+              <div style="font-size: 1.3rem; margin-bottom: 4px;">📂</div>
+              <div style="font-size: 0.82rem; font-weight: 600; color: #f1f5f9;">Kéo & Thả 1 hoặc nhiều file CSV Báo Cáo Cụm Từ Tìm Kiếm vào đây</div>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Tự động hợp nhất dữ liệu từ Google Ads (Hỗ trợ cả Shopee, Traveloka, Trip.com)</div>
+            </div>
+            <button id="btnOpenSessionModal" type="button" class="btn btn-secondary" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 16px; border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); background: rgba(30, 41, 59, 0.7); min-width: 140px; cursor: pointer;" title="Xem các phiên dữ liệu đã lưu trong IndexedDB">
+              <span style="font-size: 1.2rem; margin-bottom: 2px;">💾</span>
+              <span style="font-size: 0.76rem; font-weight: 600; color: #38bdf8;">Lịch Sử Phiên</span>
+              <span style="font-size: 0.65rem; color: #94a3b8;" id="savedSessionCountBadge">0 phiên lưu</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Account & Campaign Filter Dropdowns -->
+          <div class="st-filter-hierarchy">
+            <div class="st-select-group">
+              <label class="text-xs text-muted">Tài khoản (Sản phẩm):</label>
+              <select id="stAccountSelect" class="select-dropdown">
+                <option value="ALL">-- Tất cả tài khoản --</option>
+              </select>
+            </div>
+            <div class="st-select-group">
+              <label class="text-xs text-muted">Chiến dịch (Campaign):</label>
+              <select id="stCampaignSelect" class="select-dropdown">
+                <option value="ALL">-- Tất cả chiến dịch --</option>
+              </select>
+            </div>
+            <div class="st-summary-badge" id="stSummaryStats">
+              Đang xem: <b id="statActiveTerms">0</b> cụm từ | <b id="statActiveClicks">0</b> click | <b id="statActiveCost">0₫</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thanh Điều Hướng Các Tab Chức Năng -->
+        <div class="st-subtabs">
+          <button class="st-subtab-btn active" data-subtab="sub-url-discovery">
+            🌐 1. Trang Đích & Cấu Trúc DSA Targets
+          </button>
+          <button class="st-subtab-btn" data-subtab="sub-terms-table">
+            💬 2. Phân Tích & Phủ Định Cụm Từ
+          </button>
+          <button class="st-subtab-btn" data-subtab="sub-adult-panel" style="font-weight: 700; color: #fb7185;">
+            🧹 3. Lọc & Phủ Định Từ Khóa Rác (18+ & Mẹo & Thuốc)
+          </button>
+          <button class="st-subtab-btn" data-subtab="sub-negatives-mgr">
+            🛡️ 4. Kho Danh Sách Đã Phủ Định
+          </button>
+        </div>
+
+        <!-- SUBTAB 1: PHÂN TÍCH CẤU TRÚC URL -->
+        <div id="sub-url-discovery" class="st-subcontent active">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Bóc Tách Cấu Trúc URL Tiềm Năng (DSA Dynamic Targets)</h3>
+                <p class="text-sm text-muted">Gom nhóm trang đích (Danh mục, Tìm kiếm, Blog, Shop) để tìm ra URL sinh ra nhiều click mua hàng nhất</p>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" id="btnImportNegativeUrls" title="Dán hoặc nhập danh sách các URL bạn đã loại trừ trên Google Ads để hệ thống nhận diện">
+                  📥 Nhập URL Đã Loại Trừ
+                </button>
+                <button class="btn btn-secondary btn-sm" id="btnExportUrlRules">
+                  Xuất Cấu Hình Target Rules (.CSV)
+                </button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <!-- Khuyến Nghị Cấu Hình Chiến Lược DSA Target -->
+              <div id="urlStrategyRecommendations" style="margin-bottom: 20px;">
+                <!-- Injected via JS -->
+              </div>
+
+              <div class="url-insights-grid" id="urlCategoryCards">
+                <!-- Injected via JS: Cards for categories -->
+              </div>
+
+              <!-- Chuyển đổi 2 chế độ xem: Nhóm Cấu Trúc URL vs Chi Tiết Từng URL Đơn Lẻ -->
+              <div style="margin-top: 24px; padding: 6px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm btn-primary" id="btnViewModeStructure" style="font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                  🌐 1. Gom Nhóm Cấu Trúc Để Lên Camp (Targets & Rules)
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="btnViewModeSingle" style="font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                  🔗 2. Xem Từng URL Chi Tiết (Search Terms, Clicks, Phủ Định)
+                </button>
+                <div style="margin-left: auto; font-size: 0.8rem; color: var(--text-muted); padding-right: 8px;" id="urlViewModeDesc">
+                  Đang xem: <b>Mẫu cấu trúc URL để cấu hình chiến dịch Google Ads</b>
+                </div>
+              </div>
+
+              <div class="table-controls" style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 380px;">
+                  <input type="text" id="urlSearchFilter" class="input-text" placeholder="🔍 Lọc theo URL hoặc nhóm..." style="width: 100%;">
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                  <select id="urlCategoryFilter" class="select-dropdown" style="width: auto;">
+                    <option value="ALL">-- Tất cả phân loại --</option>
+                    <option value="ADULT_CONTENT">🔞 Trang đích người lớn 18+ (Vi phạm)</option>
+                    <option value="GUIDE_TRANSPORT">🚇 Phương tiện / Metro / Ga (/guide/transport/)</option>
+                    <option value="GUIDE_INFO">ℹ️ Mẹo vặt / Thời tiết / Visa (/guide/info/)</option>
+                    <option value="GUIDE_DEST">🏞️ Cẩm nang Điểm đến (/guide/destination/)</option>
+                    <option value="HOTELS_BOOKING">🏨 Đặt phòng khách sạn (/hotels/)</option>
+                    <option value="FLIGHTS_BOOKING">✈️ Đặt vé máy bay (/flights/)</option>
+                    <option value="FLIGHTS_STATUS">📡 Tra cứu chuyến bay (/flights/status/)</option>
+                    <option value="GUIDE_SHOPPING">🛍️ Mua sắm / Quà cáp (/guide/shopping/)</option>
+                    <option value="GUIDE_FOOD">🍜 Cẩm nang ẩm thực (/guide/food/)</option>
+                    <option value="ACTIVITIES">🎡 Vé vui chơi / Sự kiện (/things-to-do/)</option>
+                    <option value="BLOG">📝 Bài viết Blog / Mẹo (/inspirasi-shopee/)</option>
+                    <option value="DEST_ACC">🏨 Lưu trú / Khách sạn (-acc)</option>
+                    <option value="DEST_GT">🚌 Phương tiện / Bến xe (-gt)</option>
+                    <option value="DEST_TRP">🎡 Trải nghiệm / Điểm đến (-trp)</option>
+                    <option value="CULINARY">🍜 Ẩm thực / Quán ăn (/culinary/)</option>
+                    <option value="LIST">📁 Danh mục (/list/)</option>
+                    <option value="SEARCH">🔍 Trang tìm kiếm (/search?)</option>
+                    <option value="SHOP">🛒 Đặt chỗ trực tiếp / Shop</option>
+                  </select>
+
+                  <select id="urlExclFilter" class="select-dropdown" style="width: auto;">
+                    <option value="ALL">-- Tất cả trạng thái --</option>
+                    <option value="ACTIVE">Chưa loại trừ (Đang chạy)</option>
+                    <option value="EXCLUDED">🚫 Đã loại trừ (Trên Google Ads hoặc App)</option>
+                  </select>
+
+                  <select id="urlSortSelect" class="select-dropdown" style="width: auto;">
+                    <option value="clicks_desc">Lượt click (Nhiều nhất ↓)</option>
+                    <option value="clicks_asc">Lượt click (Ít nhất ↑)</option>
+                    <option value="cost_desc">Chi phí cao nhất ↓</option>
+                    <option value="cost_asc">Chi phí thấp nhất ↑</option>
+                    <option value="cpc_desc">CPC trung bình cao nhất ↓</option>
+                    <option value="cpc_asc">CPC trung bình thấp nhất ↑</option>
+                    <option value="imp_desc">Lượt hiển thị cao nhất ↓</option>
+                    <option value="imp_asc">Lượt hiển thị thấp nhất ↑</option>
+                    <option value="terms_desc">Số Search Terms nhiều nhất ↓</option>
+                    <option value="terms_asc">Số Search Terms ít nhất ↑</option>
+                    <option value="ctr_desc">CTR cao nhất ↓</option>
+                    <option value="ctr_asc">CTR thấp nhất ↑</option>
+                    <option value="prefix_asc">Tên URL (A → Z)</option>
+                  </select>
+
+                  <select id="urlLimitSelect" class="select-dropdown" style="width: auto;">
+                    <option value="50">Hiển thị 50 dòng</option>
+                    <option value="100">Hiển thị 100 dòng</option>
+                    <option value="200">Hiển thị 200 dòng</option>
+                    <option value="500">Hiển thị 500 dòng</option>
+                    <option value="ALL">Hiển thị tất cả (Không giới hạn)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="table-container" style="margin-top: 10px;">
+                <table class="data-table" id="urlGroupTable">
+                  <thead>
+                    <tr>
+                      <th class="th-sortable" data-col="prefix" onclick="handleUrlHeaderSort('prefix')">
+                        <span id="urlColHeaderLabel">Cấu Trúc / Tiền Tố URL</span> <span class="sort-arrow" id="sort-prefix">↕</span>
+                      </th>
+                      <th class="th-sortable" data-col="urlType" onclick="handleUrlHeaderSort('urlType')">
+                        Phân Loại <span class="sort-arrow" id="sort-urlType">↕</span>
+                      </th>
+                      <th class="th-sortable" data-col="terms" onclick="handleUrlHeaderSort('terms')">
+                        Số Search Terms <span class="sort-arrow" id="sort-terms">↕</span>
+                      </th>
+                      <th class="th-sortable active" data-col="clicks" onclick="handleUrlHeaderSort('clicks')">
+                        Lượt Nhấp <span class="sort-arrow" id="sort-clicks">↓</span>
+                      </th>
+                      <th class="th-sortable" data-col="imp" onclick="handleUrlHeaderSort('imp')">
+                        Số Hiển Thị <span class="sort-arrow" id="sort-imp">↕</span>
+                      </th>
+                      <th class="th-sortable" data-col="ctr" onclick="handleUrlHeaderSort('ctr')">
+                        CTR TB <span class="sort-arrow" id="sort-ctr">↕</span>
+                      </th>
+                      <th class="th-sortable" data-col="cost" onclick="handleUrlHeaderSort('cost')">
+                        Chi Phí (₫) <span class="sort-arrow" id="sort-cost">↕</span>
+                      </th>
+                      <th>Hành Động Khuyên Dùng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td colspan="8" class="text-center text-muted">Chưa nạp file báo cáo</td></tr>
+                  </tbody>
+                </table>
+                <!-- Pagination Bar -->
+                <div class="pagination-bar" id="urlPaginationBar" style="display: none;">
+                  <div class="text-xs text-muted" id="urlPaginationInfo">
+                    Hiển thị 1 - 50 / 0 cấu trúc
+                  </div>
+                  <div class="pagination-controls" id="urlPaginationControls">
+                    <!-- Injected via JS -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBTAB 2: PHÂN TÍCH & PHỦ ĐỊNH CỤM TỪ TÌM KIẾM (GOM N-GRAM & SEARCH TERMS CHI TIẾT) -->
+        <div id="sub-terms-table" class="st-subcontent">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Phân Tích Cụm Từ Tìm Kiếm Thực Tế & Lọc Phủ Định</h3>
+                <p class="text-sm text-muted">Lọc theo số lượng từ (N-Gram), lọc cụm từ chứa nội dung 18+ vi phạm chính sách, và gom nhanh từ phủ định</p>
+              </div>
+              <div class="table-controls" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <button class="btn btn-secondary btn-sm" id="btnExportFilteredTerms">
+                  📥 Xuất file CSV
+                </button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <!-- Chuyển đổi chế độ xem nội bộ Tab 2: Bảng chi tiết vs Bộ lọc N-Gram ngắn -->
+              <div style="margin-bottom: 14px; padding: 6px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm btn-primary" id="btnTermSubmodeRaw" style="font-weight: 600;">
+                  📋 Bảng Cụm Từ Tìm Kiếm Chi Tiết
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="btnTermSubmodeNgram" style="font-weight: 600;">
+                  🧹 Lọc Cụm Từ Ngắn (1 từ, 2 từ, 3 từ - Chặn Từ Rác)
+                </button>
+                <div style="margin-left: auto; font-size: 0.8rem; color: var(--text-muted); padding-right: 8px;" id="termSubmodeDesc">
+                  Đang xem: <b>Danh sách cụm từ tìm kiếm đầy đủ kèm trang đích</b>
+                </div>
+              </div>
+
+              <!-- VIEW A: BẢNG CỤM TỪ CHI TIẾT (KÈM BỘ LỌC 18+ VÀ BẢN DỊCH) -->
+              <div id="termContainerRawView">
+                <div class="table-controls" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                  <input type="text" id="rawSearchFilter" class="input-search" placeholder="🔍 Tìm kiếm cụm từ / trang đích..." style="flex: 1; min-width: 200px;">
+                  
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <select id="rawAdultFilter" class="select-dropdown" style="width: auto;">
+                      <option value="ALL">-- Tất cả nội dung & Ý định --</option>
+                      <option value="ADULT_ONLY">🔞 Chỉ hiện Cụm từ 18+ (Cảnh báo vi phạm)</option>
+                      <option value="INFORMATIONAL_ONLY">ℹ️ Chỉ hiện Cụm từ Thông tin / Mẹo / Hỏi đáp (0 chuyển đổi)</option>
+                      <option value="MEDICATION_ONLY">💊 Chỉ hiện Thuốc đặc trị / Kháng sinh / Bệnh học (Loại trừ)</option>
+                      <option value="INFO_AND_MEDS">🚫 Cả Thông tin & Thuốc đặc trị (Cần phủ định)</option>
+                      <option value="SAFE_ONLY">✅ Chỉ hiện cụm từ thông thường (An toàn)</option>
+                    </select>
+
+                    <select id="rawExclFilter" class="select-dropdown" style="width: auto;">
+                      <option value="ALL">-- Trạng thái phủ định --</option>
+                      <option value="NOT_EXCLUDED">Chưa phủ định (Cần xem xét)</option>
+                      <option value="EXCLUDED">Đã phủ định sẵn trên Ads</option>
+                    </select>
+
+                    <select id="rawWasteFilter" class="select-dropdown" style="width: auto; border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
+                      <option value="ALL">-- Lọc Hiệu Quả Chi Phí --</option>
+                      <option value="WASTED_SPEND">💸 Đốt tiền không chuyển đổi (Cost > 0 & Conv = 0)</option>
+                      <option value="CONVERTED">🎯 Đã sinh chuyển đổi (Conv > 0)</option>
+                    </select>
+
+                    <select id="rawMinClicksFilter" class="select-dropdown" style="width: auto;">
+                      <option value="0">Tất cả lượt click (>= 0)</option>
+                      <option value="2">Lượt click >= 2</option>
+                      <option value="5">Lượt click >= 5</option>
+                      <option value="10">Lượt click >= 10</option>
+                    </select>
+
+                    <select id="rawUrlTypeFilter" class="select-dropdown" style="width: auto;">
+                      <option value="ALL">-- Loại trang đích --</option>
+                      <option value="ADULT_CONTENT">🔞 Trang đích 18+ (Vi phạm)</option>
+                      <option value="GUIDE_TRANSPORT">🚇 Phương tiện / Metro / Ga (/guide/transport/)</option>
+                      <option value="GUIDE_INFO">ℹ️ Mẹo vặt / Thời tiết / Visa (/guide/info/)</option>
+                      <option value="GUIDE_DEST">🏞️ Cẩm nang Điểm đến (/guide/destination/)</option>
+                      <option value="HOTELS_BOOKING">🏨 Đặt phòng khách sạn (/hotels/)</option>
+                      <option value="FLIGHTS_BOOKING">✈️ Đặt vé máy bay (/flights/)</option>
+                      <option value="FLIGHTS_STATUS">📡 Tra cứu chuyến bay (/flights/status/)</option>
+                      <option value="GUIDE_SHOPPING">🛍️ Mua sắm / Quà cáp (/guide/shopping/)</option>
+                      <option value="GUIDE_FOOD">🍜 Cẩm nang ẩm thực (/guide/food/)</option>
+                      <option value="ACTIVITIES">🎡 Vé vui chơi / Sự kiện (/things-to-do/)</option>
+                      <option value="BLOG_POTENTIAL">⭐ Blog / Mẹo tiềm năng</option>
+                      <option value="BLOG_WASTE">🚫 Blog rác (0 chuyển đổi)</option>
+                      <option value="DEST_ACC">🏨 Lưu trú / Khách sạn (-acc)</option>
+                      <option value="DEST_GT">🚌 Phương tiện / Bến xe (-gt)</option>
+                      <option value="DEST_TRP">🎡 Trải nghiệm / Điểm đến (-trp)</option>
+                      <option value="CULINARY">🍜 Ẩm thực / Quán ăn</option>
+                      <option value="LIST">📁 Danh mục (/list/)</option>
+                      <option value="SEARCH">🔍 Trang tìm kiếm (/search?)</option>
+                      <option value="SHOP">🛒 Đặt chỗ trực tiếp / Shop</option>
+                    </select>
+
+                    <select id="rawSortSelect" class="select-dropdown" style="width: auto;">
+                      <option value="clicks_desc">Lượt click nhiều nhất ↓</option>
+                      <option value="clicks_asc">Lượt click ít nhất ↑</option>
+                      <option value="cost_desc">Chi phí cao nhất ↓</option>
+                      <option value="cpc_desc">CPC cao nhất ↓</option>
+                      <option value="imp_desc">Lượt hiển thị cao nhất ↓</option>
+                      <option value="ctr_desc">CTR cao nhất ↓</option>
+                      <option value="term_asc">Tên cụm từ (A -> Z)</option>
+                    </select>
+
+                    <select id="rawLimitSelect" class="select-dropdown" style="width: auto;">
+                      <option value="50">50 dòng</option>
+                      <option value="100" selected>100 dòng</option>
+                      <option value="200">200 dòng</option>
+                      <option value="500">500 dòng</option>
+                      <option value="ALL">Tất cả</option>
+                    </select>
+
+                    <!-- Nút Thêm Nhanh Toàn Bộ Cụm Từ Đang Lọc Vào Phủ Định -->
+                    <button class="btn btn-danger btn-sm" id="btnAddAllFilteredToNeg" style="font-weight: 700; white-space: nowrap;" title="Thêm tất cả các cụm từ đang hiển thị trong bộ lọc này vào danh sách phủ định">
+                      ⚡ Phủ định tất cả theo bộ lọc
+                    </button>
+                  </div>
+                </div>
+
+                <div class="table-container" style="max-height: 520px; overflow-y: auto;">
+                  <table class="data-table" id="rawTermsTable">
+                    <thead>
+                      <tr>
+                        <th style="width: 35px; text-align: center;">
+                          <input type="checkbox" id="rawSelectAllCheckbox" title="Chọn / Bỏ chọn tất cả trang hiện tại" style="cursor: pointer;">
+                        </th>
+                        <th>Tài khoản</th>
+                        <th>Chiến dịch</th>
+                        <th>Cụm từ tìm kiếm</th>
+                        <th>Phân loại nội dung</th>
+                        <th>Bản dịch tiếng Việt</th>
+                        <th style="min-width: 250px;">Trang đích (Landing Page)</th>
+                        <th>Lượt nhấp</th>
+                        <th>Số hiển thị</th>
+                        <th>CTR</th>
+                        <th>CPC TB</th>
+                        <th>Chi phí</th>
+                        <th>Hành động</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td colspan="13" class="text-center text-muted">Chưa có dữ liệu</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="pagination-bar" id="rawPaginationBar" style="display: none; margin-top: 8px;">
+                  <div class="text-xs text-muted" id="rawPaginationInfo">
+                    Hiển thị 1 - 100 / 0 cụm từ
+                  </div>
+                  <div class="pagination-controls" id="rawPaginationControls"></div>
+                </div>
+              </div>
+
+              <!-- VIEW B: BỘ LỌC N-GRAM NGẮN (ẨN MẶC ĐỊNH, HIỆN KHI BẤM NÚT) -->
+              <div id="termContainerNgramView" style="display: none;">
+                <div class="ngram-layout">
+                  <div class="ngram-table-box">
+                    <div class="ngram-filters" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                      <input type="text" id="ngramSearchInput" class="input-search" placeholder="Tìm kiếm cụm từ..." style="flex: 1; min-width: 140px;">
+                      <div style="display: flex; gap: 12px; align-items: center;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="ngramType" value="1" checked> <b>Từ có 1 từ</b></label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="ngramType" value="2"> <b>Từ có 2 từ</b></label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="ngramType" value="3"> <b>Từ có 3 từ</b></label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="ngramType" value="4"> <b>4 từ trở lên</b></label>
+                      </div>
+                      <label class="text-xs" style="display: flex; align-items: center; gap: 4px; color: #a1a1aa; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="ngramExcludeAlreadyNeg" checked> Bỏ qua từ đã phủ định sẵn
+                      </label>
+                      <select id="ngramSortSelect" class="select-dropdown" style="width: auto; padding: 4px 8px; font-size: 12px;">
+                        <option value="clicks_desc">Lượt nhấp (Nhiều nhất ↓)</option>
+                        <option value="clicks_asc">Lượt nhấp (Ít nhất ↑)</option>
+                        <option value="cost_desc">Chi phí cao nhất ↓</option>
+                        <option value="cost_asc">Chi phí thấp nhất ↑</option>
+                        <option value="count_desc">Số lượt tìm kiếm (Nhiều nhất ↓)</option>
+                        <option value="count_asc">Số lượt tìm kiếm (Ít nhất ↑)</option>
+                        <option value="word_asc">Cụm từ (A -> Z)</option>
+                        <option value="word_desc">Cụm từ (Z -> A)</option>
+                      </select>
+                      <select id="ngramLimitSelect" class="select-dropdown" style="width: auto; padding: 4px 8px; font-size: 12px;">
+                        <option value="50">Hiển thị 50 dòng</option>
+                        <option value="100" selected>Hiển thị 100 dòng</option>
+                        <option value="200">Hiển thị 200 dòng</option>
+                        <option value="500">Hiển thị 500 dòng</option>
+                        <option value="ALL">Tất cả (Không giới hạn)</option>
+                      </select>
+                      <button type="button" class="btn btn-danger btn-sm" id="btnAddSelectedNgramToNeg" style="font-weight: 600; padding: 4px 10px; font-size: 12px; white-space: nowrap;" title="Thêm toàn bộ từ khóa bạn đã tích chọn vào danh sách phủ định">
+                        ➕ Thêm từ đã chọn vào danh sách
+                      </button>
+                    </div>
+                    <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                      <table class="data-table" id="ngramTable">
+                        <thead>
+                          <tr>
+                            <th width="40"><input type="checkbox" id="selectAllNgram"></th>
+                            <th class="th-sortable" data-col="word" onclick="handleNgramHeaderSort('word')">
+                              Cụm từ tìm kiếm thực tế <span class="sort-arrow" id="sort-ngram-word">↕</span>
+                            </th>
+                            <th>Bản dịch tiếng Việt</th>
+                            <th class="th-sortable" data-col="count" onclick="handleNgramHeaderSort('count')">
+                              Số lượt tìm kiếm <span class="sort-arrow" id="sort-ngram-count">↕</span>
+                            </th>
+                            <th class="th-sortable active" data-col="clicks" onclick="handleNgramHeaderSort('clicks')">
+                              Lượt nhấp (Clicks) <span class="sort-arrow" id="sort-ngram-clicks">↓</span>
+                            </th>
+                            <th class="th-sortable" data-col="cost" onclick="handleNgramHeaderSort('cost')">
+                              Chi phí (₫) <span class="sort-arrow" id="sort-ngram-cost">↕</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr><td colspan="6" class="text-center text-muted">Chưa nạp dữ liệu</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <!-- Thanh phân trang Tab 2 -->
+                    <div class="pagination-bar" id="ngramPaginationBar" style="display: none; margin-top: 8px;">
+                      <div class="text-xs text-muted" id="ngramPaginationInfo">
+                        Hiển thị 1 - 50 / 0 cụm từ
+                      </div>
+                      <div class="pagination-controls" id="ngramPaginationControls"></div>
+                    </div>
+                  </div>
+
+                  <!-- Box danh sách phủ định bên cạnh -->
+                  <div class="ngram-output-box">
+                    <div class="output-header">
+                      <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <span style="font-size: 1.1rem;">🛡️</span>
+                          <h4 class="font-bold text-white" style="margin: 0; font-size: 0.95rem;">Từ Phủ Định Dự Kiến</h4>
+                          <span class="badge-tag" id="negTagCount" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">0 từ</span>
+                        </div>
+                        <p class="text-xs text-muted" style="margin: 4px 0 0 0;">Tick chọn ở bảng trái để gom từ khóa cần chặn</p>
+                      </div>
+                      <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-secondary btn-sm" onclick="clearSelectedNgramNegatives()" title="Xóa danh sách dự kiến này" style="padding: 4px 8px; font-size: 0.75rem;">
+                          🗑️ Xóa
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="copyNgramNegatives()" style="padding: 4px 10px; font-size: 0.78rem;">
+                          📋 Copy
+                        </button>
+                      </div>
+                    </div>
+                    <div class="match-type-selector">
+                      <label><input type="radio" name="stNegMatch" value="broad" onchange="renderStNegativesText()"> Rộng (Broad)</label>
+                      <label><input type="radio" name="stNegMatch" value="phrase" checked onchange="renderStNegativesText()"> "Cụm từ" (Phrase)</label>
+                      <label><input type="radio" name="stNegMatch" value="exact" onchange="renderStNegativesText()"> [Chính xác] (Exact)</label>
+                    </div>
+                    <textarea id="stNegativesArea" class="negatives-textarea" readonly placeholder="Danh sách các cụm từ bạn đã chọn sẽ tự động xuất hiện tại đây theo định dạng đã chọn..."></textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                      <span class="text-xs text-muted">Mỗi dòng 1 từ chuẩn Google Ads</span>
+                      <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('stNegativesArea').value); showToast('📋 Đã sao chép danh sách từ phủ định!')" style="font-size: 0.75rem; padding: 3px 8px;">
+                        Sao chép nhanh
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBTAB 3: XỬ LÝ VI PHẠM 18+ CHUYÊN BIỆT (LOẠI TRỪ NHANH) -->
+        <div id="sub-adult-panel" class="st-subcontent">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 1.25rem;">🧹</span>
+                  <h3 style="margin: 0;">Trung Tâm Quét & Loại Trừ Nhanh Từ Khóa Rác</h3>
+                </div>
+                <p class="text-sm text-muted" style="margin-top: 4px;">
+                  Tự động phân loại toàn bộ cụm từ 18+ (sinh lý, BCS), câu hỏi mẹo/thông tin (0 chuyển đổi), và thuốc đặc trị bệnh học để bạn rà soát và phủ định nhanh. (Bảo vệ an toàn TPCN & Thảo dược).
+                </p>
+              </div>
+              <div class="table-controls" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-danger btn-sm" id="btnQuickAddAllAdultToNeg" style="font-weight: 700;">
+                  ⚡ Phủ Định Tất Cả Cụm Từ Đang Xem
+                </button>
+                <button class="btn btn-danger btn-sm" id="btnQuickAddAllAdultUrlsToExcl" style="font-weight: 700;">
+                  🚫 Loại Trừ Tất Cả URL 18+ Vào DSA
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <!-- Summary Cards Vi Phạm 18+ -->
+              <div class="url-insights-grid" style="margin-bottom: 20px;">
+                <div class="insight-card">
+                  <div class="text-xs text-muted">Số Cụm Từ Rác Đang Lọc</div>
+                  <div class="text-2xl font-bold" id="adultCardTermsCount">0</div>
+                  <div class="text-xs text-muted" id="adultCardTermsCost">Chi phí tiêu tốn: 0₫</div>
+                </div>
+                <div class="insight-card">
+                  <div class="text-xs text-muted">Số URL Trang Đích 18+</div>
+                  <div class="text-2xl font-bold" id="adultCardUrlsCount">0</div>
+                  <div class="text-xs text-muted" id="adultCardUrlsClicks">Lượt click: 0</div>
+                </div>
+                <div class="insight-card">
+                  <div class="text-xs text-muted">Trạng Thái Đã Phủ Định</div>
+                  <div class="text-2xl font-bold" id="adultCardExcludedStatus">0 / 0</div>
+                  <div class="text-xs text-muted">Bảo vệ tài khoản an toàn</div>
+                </div>
+              </div>
+
+              <!-- Switch 3 chế độ: 1. Xem Cụm từ 18+   2. Cấu trúc Quy Tắc URL Chặn Nhanh (VD: /kondom)   3. Danh sách URL Cụ Thể -->
+              <div style="padding: 6px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 14px;">
+                <button type="button" class="btn btn-sm btn-primary" id="btnAdultSubtabTerms" style="font-weight: 600;">
+                  💬 1. Cụm Từ 18+ (Khớp Chính Xác [Exact])
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="btnAdultSubtabRules" style="font-weight: 600;">
+                  ⚡ 2. Cấu Trúc URL Loại Trừ Nhanh (Quy tắc DSA)
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="btnAdultSubtabUrls" style="font-weight: 600;">
+                  🔗 3. URL Trang Đích Cụ Thể (Chi Tiết)
+                </button>
+                <div style="margin-left: auto; font-size: 0.8rem; color: var(--text-muted); padding-right: 8px;" id="adultSubtabDesc">
+                  Đang xem: <b>Cụm từ tìm kiếm người lớn (Định dạng phủ định [Chính xác])</b>
+                </div>
+              </div>
+
+              <!-- BẢNG 1: CỤM TỪ RÁC (KÈM KHUNG XEM TRƯỚC LIVE PREVIEW ĐỂ COPY SANG ADS) -->
+              <div id="adultPanelTermsView">
+                <!-- Phân nhóm từ rác: Tất cả / 18+ / Mẹo / Thuốc đặc trị (dùng class garbage-pill-btn để tránh xung đột) -->
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; padding: 6px 10px; background: rgba(30, 41, 59, 0.4); border-radius: var(--radius-sm); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <span class="text-xs text-muted" style="font-weight: 600;">Xem theo nhóm rác:</span>
+                  <div class="product-pills" id="garbageCategoryPills">
+                    <button type="button" class="garbage-pill-btn active" data-garbage="ALL_GARBAGE">🔴 Tất cả từ rác (<span id="pillCountAll">0</span>)</button>
+                    <button type="button" class="garbage-pill-btn" data-garbage="ADULT">🔞 Nội dung 18+ (<span id="pillCountAdult">0</span>)</button>
+                    <button type="button" class="garbage-pill-btn" data-garbage="INFO">ℹ️ Hỏi mẹo / 0 đơn (<span id="pillCountInfo">0</span>)</button>
+                    <button type="button" class="garbage-pill-btn" data-garbage="MEDS">💊 Thuốc đặc trị (<span id="pillCountMeds">0</span>)</button>
+                  </div>
+                </div>
+
+                <div class="ngram-layout" style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(360px, 1fr); gap: 18px; align-items: start;">
+                  <!-- Cột Trái: Bảng danh sách từ khóa rác -->
+                  <div class="ngram-table-box">
+                    <div class="table-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                      <input type="text" id="adultPanelTermSearch" class="input-search" placeholder="🔍 Tìm kiếm cụm từ / bản dịch..." style="flex: 1; max-width: 320px;">
+                    </div>
+                    <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                      <table class="data-table" id="adultPanelTermsTable">
+                        <thead>
+                          <tr>
+                            <th width="40" style="text-align: center;"><input type="checkbox" id="selectAllGarbageTerms" title="Chọn / Bỏ chọn tất cả"></th>
+                            <th>Cụm Từ Tìm Kiếm Thực Tế</th>
+                            <th>Bản Dịch Tiếng Việt</th>
+                            <th>Từ Khớp Vi Phạm</th>
+                            <th width="65" style="text-align: center;">Đích</th>
+                            <th width="60" style="text-align: center;">Clicks</th>
+                            <th width="60" style="text-align: center;">Hiển Thị</th>
+                            <th width="90">Chi Phí (₫)</th>
+                            <th width="95" style="text-align: center;">Thao Tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr><td colspan="9" class="text-center text-muted">Chưa nạp dữ liệu</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Cột Phải: Khung Xem Trước (Live Preview) để Copy sang Google Ads -->
+                  <div class="ngram-output-box garbage-output-card">
+                    <div class="output-header" style="margin-bottom: 10px;">
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <span style="font-size: 1.1rem;">📋</span>
+                          <h4 class="font-bold text-white" style="margin: 0; font-size: 0.92rem;">Danh Sách Xem Trước</h4>
+                        </div>
+                        <span class="badge-tag" id="garbagePreviewCount" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">0 từ</span>
+                      </div>
+                      <p class="text-xs text-muted" style="margin: 4px 0 0 0;">Xem trước danh sách từ khóa rác đang lọc để copy vào Google Ads</p>
+                    </div>
+
+                    <!-- Tùy chọn khớp từ -->
+                    <div class="match-type-selector" style="margin-bottom: 8px; display: flex; gap: 8px; font-size: 0.75rem;">
+                      <label style="cursor: pointer;"><input type="radio" name="garbageNegMatch" value="exact" checked> [Chính xác]</label>
+                      <label style="cursor: pointer;"><input type="radio" name="garbageNegMatch" value="phrase"> "Cụm từ"</label>
+                      <label style="cursor: pointer;"><input type="radio" name="garbageNegMatch" value="broad"> Rộng</label>
+                    </div>
+
+                    <textarea id="txtGarbagePreview" class="negatives-textarea" style="height: 280px; width: 100%; font-family: monospace; font-size: 11px; line-height: 1.4; padding: 8px; background: rgba(2, 6, 23, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #38bdf8; resize: vertical;" placeholder="Tích chọn từ bảng trái hoặc nhập thủ công danh sách từ cần phủ định..."></textarea>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 6px; flex-wrap: wrap;">
+                      <button type="button" class="btn btn-secondary btn-sm" id="btnClearGarbagePreview" style="font-weight: 600;" title="Bỏ chọn và xóa trắng khung xem trước">
+                        🗑️ Xóa
+                      </button>
+                      <button type="button" class="btn btn-primary btn-sm" id="btnCopySelectedAdultTermsQuick" style="flex: 1; font-weight: 700;">
+                        📋 Sao chép
+                      </button>
+                      <button type="button" class="btn btn-danger btn-sm" id="btnQuickNegateCurrentPreview" style="font-weight: 700; white-space: nowrap;" title="Lưu toàn bộ danh sách đã chọn này vào bộ nhớ phủ định của hệ thống">
+                        ⚡ Phủ định
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BẢNG 2: CẤU TRÚC URL LOẠI TRỪ NHANH (QUY TẮC DSA - VÍ DỤ /KONDOM, /LINGERIE) -->
+              <div id="adultPanelRulesView" style="display: none;">
+                <div class="table-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                  <input type="text" id="adultPanelRuleSearch" class="input-search" placeholder="🔍 Tìm kiếm quy tắc cấu trúc..." style="flex: 1; max-width: 320px;">
+                  <button class="btn btn-secondary btn-sm" id="btnCopySelectedAdultRulesQuick">
+                    📋 Sao chép danh sách Quy tắc loại trừ DSA
+                  </button>
+                </div>
+                <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                  <table class="data-table" id="adultPanelRulesTable">
+                    <thead>
+                      <tr>
+                        <th>Cấu Trúc / Quy Tắc Loại Trừ (Rule)</th>
+                        <th>Ý Nghĩa Quy Tắc</th>
+                        <th>Số URL Bị Chặn</th>
+                        <th>Số Search Terms Khớp</th>
+                        <th>Tổng Clicks</th>
+                        <th>Chi Phí (₫)</th>
+                        <th>Hành Động</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td colspan="7" class="text-center text-muted">Chưa nạp dữ liệu</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- BẢNG 3: URL CỤ THỂ CHI TIẾT -->
+              <div id="adultPanelUrlsView" style="display: none;">
+                <div class="table-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                  <input type="text" id="adultPanelUrlSearch" class="input-search" placeholder="🔍 Lọc URL 18+..." style="flex: 1; max-width: 320px;">
+                  <button class="btn btn-secondary btn-sm" id="btnCopySelectedAdultUrlsQuick">
+                    📋 Sao chép các URL 18+ này
+                  </button>
+                </div>
+                <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                  <table class="data-table" id="adultPanelUrlsTable">
+                    <thead>
+                      <tr>
+                        <th>Đường Dẫn URL / Trang Đích Vi Phạm</th>
+                        <th>Dấu Hiệu Vi Phạm</th>
+                        <th>Số Search Terms Khớp</th>
+                        <th>Clicks</th>
+                        <th>Chi Phí (₫)</th>
+                        <th>Trạng Thái</th>
+                        <th>Hành Động</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td colspan="7" class="text-center text-muted">Chưa nạp dữ liệu</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBTAB 4: QUẢN LÝ TỪ & URL ĐÃ PHỦ ĐỊNH -->
+        <div id="sub-negatives-mgr" class="st-subcontent">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Quản Lý Danh Sách Đã Phủ Định (Keywords & URL Targets)</h3>
+                <p class="text-sm text-muted">Theo dõi, kiểm tra và gỡ bỏ nhanh các từ khóa hoặc URL bạn đã đưa vào danh sách loại trừ</p>
+              </div>
+              <div class="table-controls">
+                <button class="btn btn-secondary btn-sm" id="btnClearAllNegativesMgr">
+                  🗑️ Xóa tất cả
+                </button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="neg-mgr-grid">
+                <!-- Box 1: Negative Keywords -->
+                <div class="neg-mgr-card">
+                  <div class="neg-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div>
+                      <h4 style="margin: 0;">Từ khóa tìm kiếm đã phủ định</h4>
+                      <span class="badge-tag" id="mgrKeywordsCount">0 từ</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <!-- Tùy chọn đối sánh khi xuất -->
+                      <select id="mgrNegMatchType" class="select-dropdown" style="padding: 4px 8px; font-size: 0.75rem; width: auto;">
+                        <option value="broad">Khớp rộng: từ khóa</option>
+                        <option value="phrase" selected>Khớp cụm từ: "từ khóa"</option>
+                        <option value="exact">Khớp chính xác: [từ khóa]</option>
+                      </select>
+                      <button class="btn btn-primary btn-sm" id="btnCopyKeywordsMgr">
+                        📋 Sao chép từ khóa
+                      </button>
+                    </div>
+                  </div>
+                  <div class="neg-list-container" id="mgrKeywordsList">
+                    <p class="text-muted text-xs">Chưa có từ khóa nào được phủ định.</p>
+                  </div>
+                </div>
+
+                <!-- Box 2: Negative URL Targets -->
+                <div class="neg-mgr-card">
+                  <div class="neg-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div>
+                      <h4 style="margin: 0;">Cấu trúc URL đã loại trừ</h4>
+                      <span class="badge-tag" id="mgrUrlsCount">0 URL</span>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                      <button class="btn btn-secondary btn-sm" id="btnImportUrlsMgr" title="Dán danh sách URL đã loại trừ">
+                        📥 Nhập Danh Sách URL
+                      </button>
+                      <button class="btn btn-primary btn-sm" id="btnCopyUrlsMgr">
+                        📋 Sao chép URL
+                      </button>
+                    </div>
+                  </div>
+                  <div class="neg-list-container" id="mgrUrlsList">
+                    <p class="text-muted text-xs">Chưa có cấu trúc URL nào bị loại trừ.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal Nhập Danh Sách URL Đã Loại Trừ -->
+  <div id="modalImportNegativeUrls" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: var(--radius-md); max-width: 580px; width: 90%; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h4 style="margin: 0; font-size: 1.1rem; color: #fff;">📥 Nhập Danh Sách URL Đã Loại Trừ Trên Google Ads</h4>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="closeImportNegativeUrlsModal()" style="padding: 2px 8px;">✕</button>
+      </div>
+      <p class="text-xs text-muted" style="margin-bottom: 12px; line-height: 1.5;">
+        Dán các đường dẫn URL bạn đã cài đặt loại trừ hoặc <b>nạp trực tiếp file CSV Báo cáo mục tiêu quảng cáo động phủ định</b> xuất từ Google Ads (hệ thống sẽ tự động chỉ lọc lấy các dòng <code>URL bằng</code>):
+      </p>
+      <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <label class="btn btn-secondary btn-sm" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          Chọn file CSV báo cáo phủ định...
+          <input type="file" id="fileImportNegativeCsv" accept=".csv, .tsv, .txt" hidden onchange="handleNegativeCsvUpload(event)">
+        </label>
+        <span id="fileImportNegativeCsvStatus" class="text-xs text-muted"></span>
+      </div>
+      <textarea id="txtImportNegativeUrls" class="negatives-textarea" style="height: 180px; width: 100%; font-family: monospace; font-size: 12px;" placeholder="Dán URL (mỗi link 1 dòng) hoặc chọn file CSV ở trên:
+https://shopee.co.id/inspirasi-shopee/kata-kata-bijak/
+https://shopee.co.id/inspirasi-shopee/cheat-gta-5/"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+        <span class="text-xs text-muted" id="txtImportUrlCountInfo"></span>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeImportNegativeUrlsModal()">Hủy bỏ</button>
+          <button type="button" class="btn btn-primary btn-sm" id="btnSubmitImportUrls" onclick="submitImportNegativeUrls()">
+            ✓ Áp dụng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: QUẢN LÝ LỊCH SỬ PHIÊN (INDEXEDDB) -->
+  <div id="sessionHistoryModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-container" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-md); width: 90%; max-width: 650px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
+      <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h4 style="margin: 0; color: #f8fafc; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+            <span>💾</span> Lịch Sử Phiên Phân Tích (IndexedDB Offline)
+          </h4>
+          <p class="text-xs text-muted" style="margin: 4px 0 0 0;">Lưu trữ trực tiếp trên trình duyệt, không lo mất dữ liệu khi F5 hoặc đóng tab</p>
+        </div>
+        <button type="button" onclick="closeSessionModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div style="padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(30, 41, 59, 0.4); display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="inputNewSessionName" class="select-dropdown" style="flex: 1; padding: 6px 12px; font-size: 0.82rem;" placeholder="Nhập tên phiên (VD: Báo cáo Shopee Tuần 1)...">
+        <button id="btnSaveCurrentSession" type="button" class="btn btn-primary btn-sm" onclick="saveCurrentSessionToDB()">
+          💾 Lưu phiên hiện tại
+        </button>
+      </div>
+
+      <div style="flex: 1; overflow-y: auto; padding: 16px 20px;" id="sessionListContainer">
+        <div class="text-center text-muted" style="padding: 30px;">Đang tải danh sách phiên...</div>
+      </div>
+
+      <div style="padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeSessionModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../shared/js/sidebar-toggle.js"></script>
+  <script src="../shared/js/db.js"></script>
+  <script src="../shared/js/default-negative-urls.js"></script>
+  <script src="../shared/js/adult-dictionary.js"></script>
+  <script src="../shared/js/dict-id-vi.js"></script>
+  <script src="../shared/js/dict-zh-vi.js"></script>
+  <script src="loc-cum-tu-tim-kiem.js"></script>
+</body>
+</html>

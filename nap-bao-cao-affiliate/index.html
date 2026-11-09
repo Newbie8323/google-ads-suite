@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nạp Báo Cáo Sàn Affiliate | AdsInsight PRO</title>
+  <meta name="description"
+    content="Tự động chuẩn hóa file báo cáo Massoffer, Ecomobi, Adpia và đẩy trực tiếp lên Google Sheets.">
+  <link rel="icon" type="image/png" href="../shared/img/favicon.png?v=3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../shared/css/style.css">
+  <!-- SheetJS (xlsx) & PapaParse -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Navigation Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h2>AdsInsight<span class="pro-badge">PRO</span></h2>
+          <p>Google Ads Analytics Hub</p>
+        </div>
+        <button type="button" class="sidebar-toggle-btn" id="btnToggleSidebar"
+          title="Thu gọn / Mở rộng thanh điều hướng">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="../index.html" class="nav-item" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span>Trang Chủ Hub</span>
+        </a>
+        <a href="../loc-cum-tu-tim-kiem/index.html" class="nav-item" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <span>Lọc Cụm Từ Tìm Kiếm</span>
+        </a>
+        <a href="index.html" class="nav-item active" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" x2="12" y1="3" y2="15" />
+          </svg>
+          <span>Nạp Báo Cáo Affiliate</span>
+        </a>
+        <a href="../phan-tich-san-pham-shopee/index.html" class="nav-item" style="text-decoration: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+          <span>Phân Tích Sản Phẩm Shopee</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-card">
+          <div class="pulse-indicator"></div>
+          <div>
+            <div class="text-sm font-semibold">100% Offline & Bảo mật</div>
+            <div class="text-xs text-muted">Dữ liệu xử lý trên trình duyệt của bạn</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Action Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 id="pageTitle">Nạp Báo Cáo Sàn Affiliate</h1>
+          <p id="pageSubtitle" class="text-muted">Tự động chuẩn hóa file Massoffer, Ecomobi, Adpia và đẩy lên Google
+            Sheets</p>
+        </div>
+      </header>
+
+      <!-- TAB: NẠP BÁO CÁO AFFILIATE -->
+      <section id="tab-affiliate-import" class="tab-content active">
+        <!-- Top bar cài đặt nhanh -->
+        <div class="aff-top-bar"
+          style="background: rgba(15, 23, 42, 0.75); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 20px; margin-bottom: 22px;">
+          <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.1rem;">🔗</span>
+              <div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">Liên Kết Google Sheets (Apps Script)
+                </div>
+                <div
+                  style="font-size: 0.72rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                  <span
+                    style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                  Endpoint: <span id="dispEndpointStatus" style="color: #38bdf8; font-family: monospace;">Đã cấu
+                    hình</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="height: 28px; width: 1px; background: rgba(255, 255, 255, 0.1); margin: 0 4px;"
+              class="hide-mobile"></div>
+
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <span style="font-size: 0.76rem; color: #94a3b8;">Ô bắt đầu:</span>
+              <div
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 6px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 6px;">
+                <span style="font-size: 0.7rem; color: #38bdf8; font-weight: 700;">Chi Phí:</span>
+                <span
+                  style="font-size: 0.74rem; background: rgba(14, 165, 233, 0.18); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
+                  Raw_gg: <b id="dispGgCell">A532</b>
+                </span>
+                <span
+                  style="font-size: 0.74rem; background: rgba(99, 102, 241, 0.18); color: #a5b4fc; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
+                  Raw_gg_detail: <b id="dispGgDetailCell">A3947</b>
+                </span>
+              </div>
+
+              <div
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 6px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 6px;">
+                <span style="font-size: 0.7rem; color: #34d399; font-weight: 700;">Hoa Hồng:</span>
+                <span
+                  style="font-size: 0.74rem; background: rgba(59, 130, 246, 0.18); color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
+                  Raw_MO: <b id="dispMoCell">A5571</b>
+                </span>
+                <span
+                  style="font-size: 0.74rem; background: rgba(245, 158, 11, 0.18); color: #fde047; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
+                  Raw_EC: <b id="dispEcCell">A1399</b>
+                </span>
+                <span
+                  style="font-size: 0.74rem; background: rgba(244, 63, 94, 0.18); color: #fda4af; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
+                  Raw_AP: <b id="dispApCell">A549</b>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-secondary btn-sm" onclick="toggleAffSettingsModal(true)"
+              style="display: flex; align-items: center; gap: 7px; font-weight: 600;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              Cấu hình Google Sheets
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter switcher tabs -->
+        <div class="aff-view-switcher"
+          style="display: flex; gap: 10px; margin-bottom: 22px; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+          <span style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-right: 4px;">Chế độ hiển thị:</span>
+          <button id="view-all-btn" class="btn btn-sm btn-primary" onclick="setAffViewMode('all')"
+            style="border-radius: 9999px; padding: 6px 16px; font-weight: 700; font-size: 0.78rem;">
+            Tất Cả (5 Báo Cáo)
+          </button>
+          <button id="view-costs-btn" class="btn btn-sm btn-secondary" onclick="setAffViewMode('costs')"
+            style="border-radius: 9999px; padding: 6px 16px; font-weight: 700; font-size: 0.78rem; border-color: rgba(56, 189, 248, 0.4);">
+            📈 Chi Phí Ads (2)
+          </button>
+          <button id="view-comms-btn" class="btn btn-sm btn-secondary" onclick="setAffViewMode('comms')"
+            style="border-radius: 9999px; padding: 6px 16px; font-weight: 700; font-size: 0.78rem; border-color: rgba(16, 185, 129, 0.4);">
+            💰 Hoa Hồng Sàn (3)
+          </button>
+        </div>
+
+        <!-- KHỐI 1: CHI PHÍ QUẢNG CÁO (GOOGLE ADS) -->
+        <div id="section-costs" class="aff-section-wrapper" style="margin-bottom: 34px;">
+          <div class="section-title-bar"
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(56, 189, 248, 0.25);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div
+                style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                📈
+              </div>
+              <div>
+                <h3
+                  style="font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  Chi Phí Quảng Cáo Google Ads
+                  <span
+                    style="font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">2
+                    Báo Cáo</span>
+                </h3>
+                <p style="font-size: 0.74rem; color: #94a3b8; margin: 2px 0 0;">Nạp báo cáo tổng hợp chi phí (Raw_gg) và
+                  báo cáo chiến dịch chi tiết (Raw_gg_detail)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="aff-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+            <!-- SÀN 4: GOOGLE ADS (Raw_gg) -->
+            <div class="aff-card">
+              <div>
+                <div class="aff-card-header">
+                  <div>
+                    <h4 class="font-bold text-white">Google Ads</h4>
+                    <span class="text-xs text-muted">Báo cáo chi phí (.csv)</span>
+                  </div>
+                  <span class="aff-badge aff-badge-gg">Raw_gg</span>
+                </div>
+
+                <div class="drop-zone" ondragover="handleAffDragOver(event)" ondrop="handleAffDrop(event, 'GG')"
+                  onclick="document.getElementById('file-gg').click()">
+                  <div class="drop-icon" style="color: #38bdf8;">📈</div>
+                  <p class="text-sm font-semibold">Kéo thả file CSV Google Ads</p>
+                  <p class="text-xs text-muted">Tự chèn cột G trống & bỏ tổng cộng</p>
+                  <input type="file" id="file-gg" accept=".csv" hidden onchange="processFileGG(this.files[0])">
+                </div>
+
+                <div id="status-gg" class="aff-status text-xs text-muted">Chưa nạp file</div>
+              </div>
+
+              <div class="aff-actions">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="header-gg"> Gồm dòng tiêu đề
+                </label>
+                <button id="btnPushGG" onclick="pushToGoogleSheet('Raw_gg')" class="btn btn-primary btn-block">
+                  🚀 Đẩy lên Raw_gg
+                </button>
+                <button onclick="copyAffToClipboard('Raw_gg')" class="btn btn-secondary btn-block">
+                  📋 Sao chép dán tay
+                </button>
+              </div>
+            </div>
+
+            <!-- SÀN 5: GOOGLE ADS CHI TIẾT (Raw_gg_detail) -->
+            <div class="aff-card">
+              <div>
+                <div class="aff-card-header">
+                  <div>
+                    <h4 class="font-bold text-white">Google Ads Chi Tiết</h4>
+                    <span class="text-xs text-muted">Chiến dịch & Nhóm (.csv)</span>
+                  </div>
+                  <span class="aff-badge aff-badge-gg-detail">Raw_gg_detail</span>
+                </div>
+
+                <div class="drop-zone" ondragover="handleAffDragOver(event)" ondrop="handleAffDrop(event, 'GG_DETAIL')"
+                  onclick="document.getElementById('file-gg-detail').click()">
+                  <div class="drop-icon" style="color: #a5b4fc;">📊</div>
+                  <p class="text-sm font-semibold">Kéo thả file CSV Báo cáo chi tiết</p>
+                  <p class="text-xs text-muted">Chuẩn hóa dấu . và , tự động</p>
+                  <input type="file" id="file-gg-detail" accept=".csv" hidden
+                    onchange="processFileGGDetail(this.files[0])">
+                </div>
+
+                <div id="status-gg-detail" class="aff-status text-xs text-muted">Chưa nạp file</div>
+              </div>
+
+              <div class="aff-actions">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="header-gg_detail"> Gồm dòng tiêu đề
+                </label>
+                <button id="btnPushGG_DETAIL" onclick="pushToGoogleSheet('Raw_gg_detail')"
+                  class="btn btn-primary btn-block">
+                  🚀 Đẩy lên Raw_gg_detail
+                </button>
+                <button onclick="copyAffToClipboard('Raw_gg_detail')" class="btn btn-secondary btn-block">
+                  📋 Sao chép dán tay
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KHỐI 2: HOA HỒNG SÀN AFFILIATE -->
+        <div id="section-comms" class="aff-section-wrapper" style="margin-bottom: 34px;">
+          <div class="section-title-bar"
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(16, 185, 129, 0.25);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div
+                style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                💰
+              </div>
+              <div>
+                <h3
+                  style="font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  Báo Cáo Hoa Hồng Sàn Affiliate
+                  <span
+                    style="font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">3
+                    Mạng Sàn</span>
+                </h3>
+                <p style="font-size: 0.74rem; color: #94a3b8; margin: 2px 0 0;">Nạp hoa hồng từ Massoffer (Raw_MO),
+                  Ecomobi (Raw_EC), Adpia (Raw_AP)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="aff-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+            <!-- SÀN 1: MASSOFFER -->
+            <div class="aff-card">
+              <div>
+                <div class="aff-card-header">
+                  <div>
+                    <h4 class="font-bold text-white">Massoffer</h4>
+                    <span class="text-xs text-muted">Data từ dòng 7 (.xlsx)</span>
+                  </div>
+                  <span class="aff-badge aff-badge-mo">.xlsx</span>
+                </div>
+
+                <div class="drop-zone" ondragover="handleAffDragOver(event)" ondrop="handleAffDrop(event, 'MO')"
+                  onclick="document.getElementById('file-mo').click()">
+                  <div class="drop-icon text-success">📊</div>
+                  <p class="text-sm font-semibold">Kéo thả file hoặc Click tải lên</p>
+                  <p class="text-xs text-muted">Định dạng bảng tính .xlsx</p>
+                  <input type="file" id="file-mo" accept=".xlsx,.xls" hidden onchange="processFileMO(this.files[0])">
+                </div>
+
+                <div id="status-mo" class="aff-status text-xs text-muted">Chưa nạp file</div>
+              </div>
+
+              <div class="aff-actions">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="header-mo"> Gồm dòng tiêu đề
+                </label>
+                <button id="btnPushMO" onclick="pushToGoogleSheet('Raw_MO')" class="btn btn-primary btn-block">
+                  🚀 Đẩy lên Raw_MO
+                </button>
+                <button onclick="copyAffToClipboard('Raw_MO')" class="btn btn-secondary btn-block">
+                  📋 Sao chép dán tay
+                </button>
+              </div>
+            </div>
+
+            <!-- SÀN 2: ECOMOBI -->
+            <div class="aff-card">
+              <div>
+                <div class="aff-card-header">
+                  <div>
+                    <h4 class="font-bold text-white">Ecomobi</h4>
+                    <span class="text-xs text-muted">Ghép nhiều file .csv</span>
+                  </div>
+                  <span class="aff-badge aff-badge-ec">.csv multi</span>
+                </div>
+
+                <div class="drop-zone" ondragover="handleAffDragOver(event)" ondrop="handleAffDrop(event, 'EC')"
+                  onclick="document.getElementById('file-ec').click()">
+                  <div class="drop-icon text-warning">📁</div>
+                  <p class="text-sm font-semibold">Kéo thả các file CSV</p>
+                  <p class="text-xs text-muted">Ghép nhiều file tự động</p>
+                  <input type="file" id="file-ec" accept=".csv" multiple hidden onchange="processFileEC(this.files)">
+                </div>
+
+                <div id="status-ec" class="aff-status text-xs text-muted">Chưa nạp file</div>
+              </div>
+
+              <div class="aff-actions">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="header-ec"> Gồm dòng tiêu đề
+                </label>
+                <button id="btnPushEC" onclick="pushToGoogleSheet('Raw_EC')" class="btn btn-primary btn-block">
+                  🚀 Đẩy lên Raw_EC
+                </button>
+                <button onclick="copyAffToClipboard('Raw_EC')" class="btn btn-secondary btn-block">
+                  📋 Sao chép dán tay
+                </button>
+              </div>
+            </div>
+
+            <!-- SÀN 3: ADPIA -->
+            <div class="aff-card">
+              <div>
+                <div class="aff-card-header">
+                  <div>
+                    <h4 class="font-bold text-white">Adpia</h4>
+                    <span class="text-xs text-muted">Tự lọc Product Code</span>
+                  </div>
+                  <span class="aff-badge aff-badge-ap">.csv</span>
+                </div>
+
+                <div class="drop-zone" ondragover="handleAffDragOver(event)" ondrop="handleAffDrop(event, 'AP')"
+                  onclick="document.getElementById('file-ap').click()">
+                  <div class="drop-icon text-danger">📑</div>
+                  <p class="text-sm font-semibold">Kéo thả file CSV Adpia</p>
+                  <p class="text-xs text-muted">Chuẩn hóa cấu trúc cột</p>
+                  <input type="file" id="file-ap" accept=".csv" hidden onchange="processFileAP(this.files[0])">
+                </div>
+
+                <div id="status-ap" class="aff-status text-xs text-muted">Chưa nạp file</div>
+              </div>
+
+              <div class="aff-actions">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="header-ap"> Gồm dòng tiêu đề
+                </label>
+                <button id="btnPushAP" onclick="pushToGoogleSheet('Raw_AP')" class="btn btn-primary btn-block">
+                  🚀 Đẩy lên Raw_AP
+                </button>
+                <button onclick="copyAffToClipboard('Raw_AP')" class="btn btn-secondary btn-block">
+                  📋 Sao chép dán tay
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL: CÀI ĐẶT HỆ THỐNG GOOGLE APPS SCRIPT -->
+  <div id="aff-settings-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 680px; border: 1px solid rgba(59, 130, 246, 0.3);">
+      <div class="modal-header"
+        style="background: rgba(15, 23, 42, 0.8); padding: 18px 24px; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div
+            style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.1rem;">
+            ⚙️
+          </div>
+          <div>
+            <h3 class="font-bold" style="color: #f8fafc; font-size: 1rem; margin: 0;">Cấu Hình Kết Nối Google Sheets
+            </h3>
+            <p style="font-size: 0.74rem; color: #94a3b8; margin: 2px 0 0;">Thiết lập Web App API & vị trí dòng nạp tự
+              động cho 4 nguồn dữ liệu</p>
+          </div>
+        </div>
+        <button onclick="toggleAffSettingsModal(false)" class="btn-close">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 22px 24px;">
+        <!-- Input 1: Script URL -->
+        <div class="input-group">
+          <label
+            style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">
+            <span>Google Apps Script Web App URL</span>
+            <span style="font-size: 0.72rem; color: #10b981;">● Đang kích hoạt</span>
+          </label>
+          <div style="position: relative;">
+            <input type="text" id="cfg-url" class="input-text font-mono"
+              style="width: 100%; font-size: 0.78rem; padding: 10px 12px; background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border-color); border-radius: 6px; color: #93c5fd;"
+              placeholder="https://script.google.com/macros/s/.../exec">
+          </div>
+          <div style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">Link Web App triển khai từ Google Sheets với
+            quyền truy cập "Anyone" (Bất kỳ ai).</div>
+        </div>
+
+        <!-- Section: Vị trí dòng chèn -->
+        <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.07);">
+          <div
+            style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <span>📍</span> Vị Trí Ô Bắt Đầu Ghi Đè / Nối Tiếp Dữ Liệu
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
+            <div class="input-group"
+              style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2);">
+              <label
+                style="font-size: 0.74rem; font-weight: 700; color: #60a5fa; display: block; margin-bottom: 4px;">Sàn
+                Massoffer</label>
+              <input type="text" id="cfg-mo-cell" class="input-text text-center font-mono"
+                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A5571">
+              <span
+                style="font-size: 0.68rem; color: #64748b; display: block; text-align: center; margin-top: 4px;">Tab:
+                Raw_MO</span>
+            </div>
+            <div class="input-group"
+              style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2);">
+              <label
+                style="font-size: 0.74rem; font-weight: 700; color: #fbbf24; display: block; margin-bottom: 4px;">Sàn
+                Ecomobi</label>
+              <input type="text" id="cfg-ec-cell" class="input-text text-center font-mono"
+                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A1399">
+              <span
+                style="font-size: 0.68rem; color: #64748b; display: block; text-align: center; margin-top: 4px;">Tab:
+                Raw_EC</span>
+            </div>
+            <div class="input-group"
+              style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; border: 1px solid rgba(244, 63, 94, 0.2);">
+              <label
+                style="font-size: 0.74rem; font-weight: 700; color: #fb7185; display: block; margin-bottom: 4px;">Sàn
+                Adpia</label>
+              <input type="text" id="cfg-ap-cell" class="input-text text-center font-mono"
+                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A549">
+              <span
+                style="font-size: 0.68rem; color: #64748b; display: block; text-align: center; margin-top: 4px;">Tab:
+                Raw_AP</span>
+            </div>
+            <div class="input-group"
+              style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; border: 1px solid rgba(14, 165, 233, 0.3);">
+              <label
+                style="font-size: 0.74rem; font-weight: 700; color: #38bdf8; display: block; margin-bottom: 4px;">Google
+                Ads</label>
+              <input type="text" id="cfg-gg-cell" class="input-text text-center font-mono"
+                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A532">
+              <span
+                style="font-size: 0.68rem; color: #64748b; display: block; text-align: center; margin-top: 4px;">Tab:
+                Raw_gg</span>
+            </div>
+            <div class="input-group"
+              style="background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.3);">
+              <label
+                style="font-size: 0.74rem; font-weight: 700; color: #a5b4fc; display: block; margin-bottom: 4px;">Google
+                Ads Chi Tiết</label>
+              <input type="text" id="cfg-gg-detail-cell" class="input-text text-center font-mono"
+                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A3947">
+              <span
+                style="font-size: 0.68rem; color: #64748b; display: block; text-align: center; margin-top: 4px;">Tab:
+                Raw_gg_detail</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer"
+        style="padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.6); border-top: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button onclick="resetDefaultAffSettings()" class="btn btn-secondary btn-sm"
+            style="color: #94a3b8; font-size: 0.78rem;">
+            Khôi phục mặc định
+          </button>
+          <span style="font-size: 0.72rem; color: #10b981; display: flex; align-items: center; gap: 4px;">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Tự động lưu khi gõ
+          </span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button onclick="toggleAffSettingsModal(false)" class="btn btn-primary btn-sm" style="font-weight: 700;">
+            ✓ Hoàn Tất & Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../shared/js/sidebar-toggle.js"></script>
+  <script src="../shared/js/config.local.js"></script>
+  <script src="nap-bao-cao-affiliate.js"></script>
+</body>
+
+</html>
