@@ -217,6 +217,7 @@ let currentFilter = {
   date: 'all',
   startDate: '', // YYYY-MM-DD
   endDate: '',   // YYYY-MM-DD
+  segment: 'all', // 'all', 'winner', 'loser', 'gem', 'brand'
   sortBy: 'roas_desc'
 };
 
@@ -1131,6 +1132,23 @@ function getFilteredCampaigns() {
     list = list.filter(c => c.campaignId.toLowerCase().includes(q) || c.campaignName.toLowerCase().includes(q));
   }
 
+  // Lọc theo phân khúc chiến lược (Winner, Loser, Hidden Gem)
+  if (currentFilter.segment && currentFilter.segment !== 'all') {
+    list = list.filter(c => {
+      const roas = c.cost > 0 ? (c.commission / c.cost) : 0;
+      if (currentFilter.segment === 'winner') {
+        return (roas >= 1.2 || (c.commission >= 100000 && c.orders >= 3));
+      } else if (currentFilter.segment === 'loser') {
+        return (c.cost >= 50000 && (c.orders === 0 || roas < 0.4));
+      } else if (currentFilter.segment === 'gem') {
+        return (c.clicks > 0 && c.clicks <= 15 && c.orders >= 1);
+      } else if (currentFilter.segment === 'brand') {
+        return c.commission > 0;
+      }
+      return true;
+    });
+  }
+
   // Sắp xếp theo campSortCol và campSortOrder
   list.sort((a, b) => {
     let valA = 0, valB = 0;
@@ -1535,6 +1553,22 @@ function renderProductsTable() {
     list = list.filter(p => p.productName.toLowerCase().includes(q) || p.productNameVi.toLowerCase().includes(q) || p.categoryName.toLowerCase().includes(q));
   }
 
+  // Lọc theo phân khúc sản phẩm
+  if (currentFilter.segment && currentFilter.segment !== 'all') {
+    list = list.filter(p => {
+      if (currentFilter.segment === 'winner') {
+        return (p.orderCount >= 3 || p.totalCommission >= 50000);
+      } else if (currentFilter.segment === 'loser') {
+        return (p.validOrders === 0);
+      } else if (currentFilter.segment === 'gem') {
+        return (p.orderCount >= 1 && p.orderCount <= 2 && p.validOrders > 0);
+      } else if (currentFilter.segment === 'brand') {
+        return (p.brandBonus > 0);
+      }
+      return true;
+    });
+  }
+
   list.sort((a, b) => {
     let valA = 0, valB = 0;
     if (prodSortCol === 'totalCommission') { valA = a.totalCommission; valB = b.totalCommission; }
@@ -1575,10 +1609,12 @@ function renderProductsTable() {
     let assessment = '<span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">Tiềm Năng</span>';
     if (p.brandBonus > 0 && p.brandBonus >= p.baseCommission) {
       assessment = '<span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">⭐ Đòn Bẩy Brand</span>';
-    } else if (p.orderCount >= 3) {
-      assessment = '<span class="badge badge-success">🔥 Siêu Bán Chạy</span>';
+    } else if (p.orderCount >= 3 || p.totalCommission >= 50000) {
+      assessment = '<span class="badge badge-success">🌟 Winner</span>';
     } else if (p.validOrders === 0) {
-      assessment = '<span class="badge badge-danger">Đơn Hủy</span>';
+      assessment = '<span class="badge badge-danger">💸 Money Drainer</span>';
+    } else if (p.orderCount >= 1 && p.orderCount <= 2) {
+      assessment = '<span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">💎 Hidden Gem</span>';
     }
 
     html += `
@@ -1753,6 +1789,36 @@ function copyTopProductsList() {
   });
 }
 
+function exportDrainerNegativesList() {
+  // Lấy danh sách sản phẩm hoặc chiến dịch kém hiệu quả
+  let drainers = [];
+
+  if (activeTab === 'products') {
+    drainers = aggregatedProducts
+      .filter(p => p.validOrders === 0 && p.orderCount > 0)
+      .map(p => extractCleanKeyword(p.productNameVi || p.productName))
+      .filter(Boolean);
+  } else {
+    // Tab chiến dịch: Lấy các chiến dịch lỗ / không có đơn
+    drainers = aggregatedCampaigns
+      .filter(c => c.cost >= 30000 && (c.orders === 0 || (c.cost > 0 && c.commission / c.cost < 0.4)))
+      .map(c => c.campaignName);
+  }
+
+  if (drainers.length === 0) {
+    showToast('Không có mục nào thuộc nhóm Money Drainer cần phủ định!', false);
+    return;
+  }
+
+  // Tự động định dạng phủ định ngoặc vuông chuẩn Google Ads
+  const formatted = Array.from(new Set(drainers)).map(item => `[${item}]`).join('\n');
+  navigator.clipboard.writeText(formatted).then(() => {
+    showToast(`🚫 Đã copy ${drainers.length} mục phủ định chuẩn cú pháp [...]!`);
+  }).catch(() => {
+    showToast('Lỗi khi sao chép phủ định', true);
+  });
+}
+
 function exportCurrentTabCSV() {
   if (activeTab === 'campaigns') {
     const list = getFilteredCampaigns();
@@ -1865,6 +1931,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const exportBtn = document.getElementById('btnExportCurrentTab');
   if (exportBtn) exportBtn.addEventListener('click', exportCurrentTabCSV);
+
+  const exportDrainerBtn = document.getElementById('btnExportDrainerNegatives');
+  if (exportDrainerBtn) exportDrainerBtn.addEventListener('click', exportDrainerNegativesList);
+
+  // Segment Filter listener
+  const segmentFilter = document.getElementById('shopeeSegmentFilter');
+  if (segmentFilter) {
+    segmentFilter.addEventListener('change', e => {
+      currentFilter.segment = e.target.value;
+      renderCurrentTab();
+      const segText = segmentFilter.options[segmentFilter.selectedIndex].text;
+      showToast(`🎯 Đang lọc theo phân khúc: ${segText}`);
+    });
+  }
 
   // Tab switching
   document.querySelectorAll('.tab-pill-btn').forEach(btn => {

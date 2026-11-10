@@ -422,7 +422,17 @@
             </select>
           </div>
 
-          <div style="flex: 1; min-width: 190px;">
+          <div style="flex: 1; min-width: 170px;">
+            <select id="shopeeSegmentFilter" class="select-dropdown" style="width: 100%; border-color: rgba(238, 77, 45, 0.4); color: #ff8a65; font-weight: 600;">
+              <option value="all">🎯 Tất cả phân khúc</option>
+              <option value="winner">🌟 Winner (Ngôi sao - Scale Bid)</option>
+              <option value="loser">💸 Money Drainer (Hút tiền - Cắt/Phủ định)</option>
+              <option value="gem">💎 Hidden Gem (Tiềm năng ngách)</option>
+              <option value="brand">⭐ Đòn bẩy Brand Bonus</option>
+            </select>
+          </div>
+
+          <div style="flex: 1; min-width: 170px;">
             <select id="shopeeSortFilter" class="select-dropdown" style="width: 100%;">
               <option value="roas_desc">ROAS cao nhất ↓</option>
               <option value="profit_desc">Lợi nhuận cao nhất ↓</option>
@@ -437,6 +447,9 @@
           </div>
 
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="btnExportDrainerNegatives" class="btn btn-secondary btn-sm" style="border-color: rgba(239, 68, 68, 0.4); color: #f87171;" title="Xuất danh sách sản phẩm/chiến dịch hút tiền kém hiệu quả để phủ định">
+              🚫 Copy Phủ Định
+            </button>
             <button id="btnExportCurrentTab" class="btn btn-secondary btn-sm" title="Xuất dữ liệu của Tab hiện tại ra CSV">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Xuất CSV
