@@ -1,0 +1,21 @@
+{
+  "name": "AdsInsight Suite - Google Ads & Affiliate Intelligence",
+  "short_name": "AdsInsight",
+  "description": "Bộ công cụ phân tích Google Ads, lọc cụm từ tìm kiếm và đối soát hoa hồng Affiliate",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "shared/img/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "shared/img/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
