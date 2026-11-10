@@ -4,13 +4,29 @@
 // =========================================================================
 
 (function() {
+  function getSafeStorage(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setSafeStorage(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      // Ignored if storage is blocked by tracking prevention
+    }
+  }
+
   function initSidebarCollapse() {
     const sidebar = document.querySelector('.sidebar');
     const btnToggle = document.getElementById('btnToggleSidebar');
     if (!sidebar) return;
 
     // Phục hồi trạng thái đã lưu
-    const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    const isCollapsed = getSafeStorage('sidebar_collapsed') === 'true';
     if (isCollapsed) {
       sidebar.classList.add('collapsed');
       if (btnToggle) {
@@ -26,7 +42,7 @@
       btnToggle.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
         const nowCollapsed = sidebar.classList.contains('collapsed');
-        localStorage.setItem('sidebar_collapsed', nowCollapsed);
+        setSafeStorage('sidebar_collapsed', nowCollapsed);
 
         if (nowCollapsed) {
           btnToggle.innerHTML = `
