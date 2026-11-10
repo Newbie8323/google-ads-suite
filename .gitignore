@@ -7,4 +7,5 @@ sample_data/
 *.zip
 .vscode/
 .idea/
+.agents/
 

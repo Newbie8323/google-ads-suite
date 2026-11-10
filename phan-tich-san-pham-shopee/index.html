@@ -10,9 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/css/style.css">
-  <!-- SheetJS & PapaParse -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- SheetJS & PapaParse Local Vendor (Offline First) -->
+  <script src="../shared/vendor/xlsx.full.min.js"></script>
+  <script src="../shared/vendor/papaparse.min.js"></script>
   <style>
     /* Scoped Refinements */
     .shopee-hero-bar {
@@ -21,7 +21,7 @@
       justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
-      background: rgba(15, 23, 42, 0.6);
+      background: var(--bg-card-subtle);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       padding: 12px 18px;
@@ -39,35 +39,36 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 16px 18px;
+      padding: 18px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .kpi-mini-card:hover {
       background: var(--bg-card-hover);
-      border-color: rgba(255, 255, 255, 0.15);
+      border-color: var(--border-hover);
       transform: translateY(-2px);
+      box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4);
     }
 
     .kpi-mini-card.kpi-highlight {
-      border-left: 4px solid #10b981;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);
+      border-left: 3px solid #10b981;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-card) 100%);
     }
 
     .kpi-mini-card.kpi-gold {
-      border-left: 4px solid #f59e0b;
+      border-left: 3px solid #f59e0b;
     }
 
     .kpi-mini-card.kpi-alert {
-      border-left: 4px solid #ef4444;
+      border-left: 3px solid #ef4444;
     }
 
     .kpi-label {
       font-size: 0.75rem;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -78,12 +79,13 @@
     }
 
     .kpi-number {
-      font-size: 1.65rem;
+      font-size: 1.75rem;
       font-weight: 800;
       letter-spacing: -0.02em;
-      color: #f8fafc;
+      color: var(--text-main);
       margin-bottom: 4px;
-      font-family: var(--font-sans);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
     }
 
     .kpi-subtext {
@@ -116,10 +118,10 @@
 
     .search-input-wrap input {
       width: 100%;
-      background: rgba(15, 23, 42, 0.8);
+      background: var(--bg-card-subtle);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
-      color: #f8fafc;
+      color: var(--text-main);
       font-size: 0.85rem;
       padding: 9px 32px 9px 36px;
       outline: none;
@@ -128,7 +130,8 @@
 
     .search-input-wrap input:focus {
       border-color: #ee4d2d;
-      box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.2);
+      box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.15);
+      background: var(--bg-card);
     }
 
     .btn-clear-x {
