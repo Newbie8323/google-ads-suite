@@ -1,6 +1,6 @@
 # AGENT RULES & OPERATIONAL PRINCIPLES
 
-> Mọi hành động phải tuân thủ nghiêm ngặt các quy tắc dưới đây nhằm tối ưu token, tốc độ và đảm bảo tính chính xác tuyệt đối (Zero Hallucination).
+> Mọi hành động phải tuân thủ nghiêm ngặt các quy tắc dưới đây nhằm tối ưu token, tốc độ, đảm bảo tính bảo mật dữ liệu và kiến trúc mã nguồn chuẩn (Zero Hallucination & Zero Secret Leakage).
 
 ---
 
@@ -15,17 +15,27 @@
 - **An toàn Shell:** Không chạy inline shell chèn `${...}` hoặc backtick để tránh nuốt biến nội dung; ưu tiên dùng trực tiếp tool file.
 - **Kiểm tra tức thì:** Luôn chạy `node -c <file>` ngay sau khi sửa file JS lõi để chặn lỗi cú pháp.
 
-### 3. Tiếp Nhận Dữ Liệu Tinh Gọn (Data Handling)
+### 3. Tuyệt Đối Bảo Mật Dữ Liệu Cá Nhân (Zero Credential Leakage)
+- **Cấm ghi cứng (No Hardcoded Secrets):** Tuyệt đối KHÔNG ĐƯỢC chèn trực tiếp Spreadsheet ID cá nhân, Webhook URL, API Token, Private Key vào bất kỳ file nào được theo dõi bởi Git (ví dụ: `theo-doi-loi-nhuan.js`, `index.html`...).
+- **Cơ chế nạp bí mật:** Toàn bộ thông tin nhạy cảm bắt buộc phải gọi qua namespace nội bộ `window.ADS_LOCAL_SECRETS` (nằm trong file được `.gitignore` bảo vệ là `shared/js/config.local.js`).
+- **Kiểm tra trước khi Commit/Push:** Luôn chạy `git diff` rà soát cẩn thận trước khi tạo commit; đảm bảo biến mặc định trên Git luôn là chuỗi rỗng `""`.
+
+### 4. Kiến Trúc Mã Nguồn & Tái Sử Dụng (Deep Modules & DRY)
+- **Giao diện dùng chung:** Không copy-paste HTML cấu trúc Sidebar / Header giữa các trang. Luôn sử dụng component tập trung [`shared/js/layout.js`](file:///e:/Project/Google%20Ads/shared/js/layout.js).
+- **Hàm tiện ích tập trung:** Các hàm dùng chung (`showToast`, `escapeHtml`, `formatCurrency`, `formatNumber`, `copyToClipboard`) bắt buộc gọi qua [`shared/js/utils.js`](file:///e:/Project/Google%20Ads/shared/js/utils.js). Cấm viết lại cục bộ gây ô nhiễm namespace toàn cục (`window`).
+- **Hiệu năng nền (Non-blocking UI):** Các tác vụ xử lý file nặng (như bóc tách N-Gram, phân tích dữ liệu hàng chục nghìn dòng) phải ưu tiên đẩy vào Web Worker ngầm (`ngram-worker.js`), không chạy vòng lặp chặn Main Thread làm lag trình duyệt.
+
+### 5. Tiếp Nhận Dữ Liệu Tinh Gọn (Data Handling)
 - Đọc đủ dòng đầu để nắm chính xác toàn bộ cấu trúc cột và kiểu dữ liệu trước khi code.
 - Triển khai logic phân loại ngay; không chạy script thống kê ngữ nghĩa thừa thãi nếu không được yêu cầu.
 
-### 4. Báo Lỗi Ngay - Không Chạy Cố (Fail Fast)
+### 6. Báo Lỗi Ngay - Không Chạy Cố (Fail Fast)
 - Thất bại 1 lần = **Dừng ngay lập tức**.
 - Cấm tự chạy lặp lệnh để mò mẫm; báo đúng vị trí, nguyên nhân và đợi chỉ đạo để tiết kiệm token và thời gian.
 
 ---
 
-### 5. Quy Trình Bắt Buộc Trước Khi Sửa Code (Strict Pre-flight Protocol)
+### 7. Quy Trình Bắt Buộc Trước Khi Sửa Code (Strict Pre-flight Protocol)
 - **Quy tắc Zero-Action khi thiếu dữ liệu:** Khi người dùng báo lỗi giao diện/runtime mà chưa kèm:
   1. Tên file/dữ liệu thực tế đang thao tác.
   2. Thông báo lỗi cụ thể hoặc log đỏ trong F12 Console.
