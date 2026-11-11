@@ -20,13 +20,18 @@
     }
   }
 
-  function initSidebarCollapse() {
+  // 1. Thực thi ngay lập tức để gắn class lên <html> ngăn chặn FOUC/giật animation
+  const isCollapsed = getSafeStorage('sidebar_collapsed') === 'true';
+  if (isCollapsed) {
+    document.documentElement.classList.add('sidebar-is-collapsed');
+  }
+
+  // Bật lại transition mượt mà sau khi trang đã render xong trạng thái ban đầu
+  window.initSidebarToggleEvent = function() {
     const sidebar = document.querySelector('.sidebar');
     const btnToggle = document.getElementById('btnToggleSidebar');
     if (!sidebar) return;
 
-    // Phục hồi trạng thái đã lưu
-    const isCollapsed = getSafeStorage('sidebar_collapsed') === 'true';
     if (isCollapsed) {
       sidebar.classList.add('collapsed');
       if (btnToggle) {
@@ -38,7 +43,12 @@
       }
     }
 
-    if (btnToggle) {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove('sidebar-is-collapsed');
+    });
+
+    if (btnToggle && !btnToggle.dataset.bound) {
+      btnToggle.dataset.bound = 'true';
       btnToggle.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
         const nowCollapsed = sidebar.classList.contains('collapsed');
@@ -58,7 +68,26 @@
           `;
         }
       });
+
+      // Lắng nghe phím tắt tiện ích: Ctrl + B hoặc phím '[' để thu gọn/mở rộng sidebar
+      if (!window.__sidebarShortcutBound) {
+        window.__sidebarShortcutBound = true;
+        document.addEventListener('keydown', (e) => {
+          // Tránh kích hoạt khi người dùng đang gõ phím trong ô input hoặc textarea
+          const tag = e.target.tagName;
+          if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+
+          if ((e.ctrlKey && e.key.toLowerCase() === 'b') || e.key === '[') {
+            e.preventDefault();
+            btnToggle.click();
+          }
+        });
+      }
     }
+  };
+
+  function initSidebarCollapse() {
+    window.initSidebarToggleEvent();
   }
 
   if (document.readyState === 'loading') {

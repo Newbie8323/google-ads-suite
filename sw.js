@@ -1,12 +1,15 @@
-// Service Worker tối giản phục vụ PWA cache tĩnh
-const CACHE_NAME = 'adsinsight-cache-v1';
+// Service Worker tối giản phục vụ PWA cache tĩnh (Offline First)
+const CACHE_NAME = 'adsinsight-cache-v2';
 const ASSETS_TO_CACHE = [
   './index.html',
   './shared/css/style.css',
   './shared/img/favicon.png',
   './shared/vendor/papaparse.min.js',
   './shared/vendor/xlsx.full.min.js',
+  './shared/vendor/chart.umd.min.js',
   './shared/js/sidebar-toggle.js',
+  './shared/js/layout.js',
+  './shared/js/utils.js',
   './shared/js/db.js',
   './shared/js/command-palette.js'
 ];

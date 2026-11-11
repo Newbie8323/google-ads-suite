@@ -4,6 +4,7 @@ config.local.js
 
 # Các file dữ liệu mẫu nặng & dữ liệu nội bộ
 sample_data/
+data/sample_data/
 *.zip
 .vscode/
 .idea/

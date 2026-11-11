@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theo Dõi Lời Lãi Chiến Dịch | AdsInsight PRO</title>
+  <meta name="description"
+    content="Dashboard tài chính & giám sát biên lợi nhuận, chi phí, doanh thu thực tế và ROAS từng chiến dịch Google Ads.">
+  <link rel="icon" type="image/png" href="../shared/img/favicon.png?v=3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../shared/css/style.css">
+  <script>
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+      document.documentElement.classList.add('sidebar-is-collapsed');
+    }
+  </script>
+  <script src="../shared/vendor/chart.umd.min.js"></script>
+  <style>
+    /* Design Tokens: Data-Dense Financial Dashboard & Dark OLED Glassmorphism */
+    :root {
+      --fin-bg: #030712;
+      --fin-surface: #0b1120;
+      --fin-surface-elevated: #111a2e;
+      --fin-card-border: rgba(255, 255, 255, 0.08);
+      --fin-card-border-hover: rgba(59, 130, 246, 0.4);
+      --fin-profit: #10b981;
+      --fin-loss: #f43f5e;
+      --fin-warning: #f59e0b;
+      --fin-trust: #3b82f6;
+      --fin-purple: #a855f7;
+    }
+
+    /* Tab Switcher Navigation */
+    .view-tab-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(11, 17, 32, 0.8);
+      border: 1px solid var(--fin-card-border);
+      padding: 5px;
+      border-radius: 12px;
+      margin-bottom: 22px;
+      width: fit-content;
+    }
+
+    .view-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .view-tab-btn:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .view-tab-btn.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+
+    .tab-view-content {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-view-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Chart Layout */
+    .charts-grid-2col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: var(--fin-surface);
+      border: 1px solid var(--fin-card-border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+
+    .chart-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 12px;
+    }
+
+    .chart-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-container-box {
+      position: relative;
+      width: 100%;
+      height: 320px;
+    }
+
+    /* KPI Highlights Grid */
+    .financial-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .fin-kpi-card {
+      background: var(--fin-surface);
+      border: 1px solid var(--fin-card-border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .fin-kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+    }
+
+    .fin-kpi-card:hover {
+      border-color: var(--fin-card-border-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .fin-kpi-card.card-cost::before { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+    .fin-kpi-card.card-revenue::before { background: linear-gradient(90deg, #10b981, #34d399); }
+    .fin-kpi-card.card-profit::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .fin-kpi-card.card-roas::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .fin-kpi-card.card-stats::before { background: linear-gradient(90deg, #a855f7, #c084fc); }
+
+    .kpi-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .kpi-icon-pill {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kpi-main-num {
+      font-size: 26px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #f8fafc;
+      letter-spacing: -0.6px;
+      line-height: 1.15;
+    }
+
+    .kpi-sub-text {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Controls Toolbar */
+    .controls-panel {
+      background: var(--fin-surface);
+      border: 1px solid var(--fin-card-border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .filter-group-wrap {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .input-pill-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .styled-select, .styled-search {
+      background: #060b17;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 9px;
+      color: #f8fafc;
+      padding: 9px 13px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+      color-scheme: dark;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      filter: invert(0.8) brightness(1.2);
+      opacity: 0.85;
+      padding: 2px;
+      transition: all 0.2s ease;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+
+    .styled-select:focus, .styled-search:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-sync-glow {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-sync-glow:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+    }
+
+    .btn-sync-glow:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .spinner-ring {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spinRing 0.75s linear infinite;
+      display: none;
+    }
+
+    @keyframes spinRing {
+      to { transform: rotate(360deg); }
+    }
+
+    .badge-date-range {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      color: #60a5fa;
+      padding: 5px 11px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cookie-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .cookie-shopee { background: rgba(238, 77, 45, 0.15); color: #ff8a65; border: 1px solid rgba(238, 77, 45, 0.3); }
+    .cookie-traveloka { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .cookie-trip { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+    .lag-guide-banner {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 3px solid #3b82f6;
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .lag-guide-items {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .lag-guide-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Table Container & Micro-interactions */
+    .table-card-wrapper {
+      background: var(--fin-surface);
+      border: 1px solid var(--fin-card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+      margin-bottom: 30px;
+    }
+
+    .table-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--fin-card-border);
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .table-scroll-viewport {
+      overflow-x: auto;
+      max-height: calc(100vh - 430px);
+    }
+
+    .data-dense-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+    }
+
+    .data-dense-table thead {
+      position: sticky;
+      top: 0;
+      background: #090e1a;
+      z-index: 10;
+    }
+
+    .data-dense-table th {
+      padding: 12px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      text-align: left;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .data-dense-table th:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .data-dense-table th.sorted {
+      color: #60a5fa;
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .data-dense-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      vertical-align: middle;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+    }
+
+    .data-dense-table tbody tr:hover td {
+      background: rgba(59, 130, 246, 0.04);
+    }
+
+    /* Indicators & Badges */
+    .acc-tag {
+      background: rgba(255, 255, 255, 0.07);
+      color: #94a3b8;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      display: inline-block;
+      max-width: 170px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .roas-chip {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    .roas-high { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .roas-med { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .roas-low { background: rgba(244, 63, 94, 0.18); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    .delay-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .delay-normal { background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
+    .delay-warn { background: rgba(245, 158, 11, 0.18); color: #fbbf24; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .decision-badge {
+      font-size: 12px;
+      padding: 5px 9px;
+      border-radius: 7px;
+      display: inline-block;
+      max-width: 270px;
+      line-height: 1.35;
+    }
+    .badge-success { background: rgba(16, 185, 129, 0.14); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.28); }
+    .badge-info { background: rgba(59, 130, 246, 0.14); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.28); }
+    .badge-warning { background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.28); }
+    .badge-danger { background: rgba(244, 63, 94, 0.14); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.28); }
+    .badge-neutral { background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
+
+    .text-truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .text-right { text-align: right !important; }
+    .text-center { text-align: center !important; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Navigation Sidebar (Tự động đồng bộ qua shared/js/layout.js) -->
+    <aside class="sidebar"></aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div>
+          <h1 class="page-title">Theo Dõi Lời Lãi Chiến Dịch</h1>
+          <p class="page-subtitle">Giám sát chi phí, doanh thu thực tế, độ trễ đơn hàng (delay) và hiệu quả sinh lời từng chiến dịch Google Ads</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" class="btn-sync-glow" id="btnSync">
+            <span class="spinner-ring" id="syncSpinner"></span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            <span>Đồng Bộ Dữ Liệu</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Lag & Cookie Window Attribution Guide Banner -->
+      <div class="lag-guide-banner">
+        <div class="lag-guide-items">
+          <div class="lag-guide-item font-semibold text-main">
+            <span>🛡️ Nguyên tắc chốt số an toàn:</span>
+            <span class="text-warning">Chỉ chắc chắn dữ liệu từ 2 ngày trước (T-2) trở về trước</span>
+          </div>
+          <span>•</span>
+          <div class="lag-guide-item">
+            <span>Thời hạn Cookie sàn:</span>
+            <span class="cookie-chip cookie-shopee">Shopee: 7D</span>
+            <span class="cookie-chip cookie-traveloka">Traveloka: 14D</span>
+            <span class="cookie-chip cookie-trip">Trip.com: 30D</span>
+          </div>
+        </div>
+        <div class="text-xs" id="lagStatusNotice" style="color: #60a5fa;">
+          ✅ <em>Đang lọc chu kỳ an toàn: Đã loại bỏ 2 ngày trễ để tránh làm lệch số ROAS</em>
+        </div>
+      </div>
+
+      <!-- KPI Summary Highlight Cards -->
+      <div class="financial-kpi-grid">
+        <!-- Chi Phí -->
+        <div class="fin-kpi-card card-cost">
+          <div class="kpi-top-row">
+            <span class="kpi-label">Tổng Chi Phí (Cost)</span>
+            <div class="kpi-icon-pill" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-main-num" style="color: #fb7185;" id="kpiCost">0 ₫</div>
+          <div class="kpi-sub-text">
+            <span>Quảng cáo Google</span>
+            <span id="kpiClicks" class="font-mono text-muted">0 clicks</span>
+          </div>
+        </div>
+
+        <!-- Doanh Thu -->
+        <div class="fin-kpi-card card-revenue">
+          <div class="kpi-top-row">
+            <span class="kpi-label">Tổng Doanh Thu</span>
+            <div class="kpi-icon-pill" style="background: rgba(168, 85, 247, 0.15); color: #34d399;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-main-num" style="color: #34d399;" id="kpiRevenue">0 ₫</div>
+          <div class="kpi-sub-text">
+            <span>Hoa hồng ghi nhận</span>
+            <span id="kpiOrders" class="font-mono text-muted">0 đơn</span>
+          </div>
+        </div>
+
+        <!-- Lợi Nhuận -->
+        <div class="fin-kpi-card card-profit">
+          <div class="kpi-top-row">
+            <span class="kpi-label">Lợi Nhuận Ròng</span>
+            <div class="kpi-icon-pill" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 6l-9.5 9.5-5-5L1 18"/>
+                <path d="M17 6h6v6"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-main-num" id="kpiProfit">0 ₫</div>
+          <div class="kpi-sub-text">
+            <span>Doanh thu - Chi phí</span>
+            <span id="kpiMargin" class="font-mono text-muted">0% margin</span>
+          </div>
+        </div>
+
+        <!-- ROAS & CPC -->
+        <div class="fin-kpi-card card-roas">
+          <div class="kpi-top-row">
+            <span class="kpi-label">ROAS / CPC Trung Bình</span>
+            <div class="kpi-icon-pill" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-main-num" id="kpiRoas">0.00x</div>
+          <div class="kpi-sub-text">
+            <span>CPC TB: <strong id="kpiCpc" class="font-mono text-main font-semibold">0 ₫</strong></span>
+            <span>CTR: <strong id="kpiCtr" class="font-mono text-main font-semibold">0%</strong></span>
+          </div>
+        </div>
+
+        <!-- Tỷ Lệ Chiến Dịch Sinh Lời -->
+        <div class="fin-kpi-card card-stats">
+          <div class="kpi-top-row">
+            <span class="kpi-label">Hiệu Suất Chiến Dịch</span>
+            <div class="kpi-icon-pill" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-main-num" id="kpiProfitableCamp">0 / 0</div>
+          <div class="kpi-sub-text">
+            <span>Camp có lãi</span>
+            <span id="kpiTotalCamp" class="font-mono text-muted">Tổng: 0 camp</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls & Filter Toolbar -->
+      <div class="controls-panel">
+        <div class="filter-group-wrap">
+          <!-- Chọn chu kỳ thời gian -->
+          <div>
+            <label class="input-pill-label">Chu kỳ thời gian:</label>
+            <select class="styled-select" id="periodSelect">
+              <option value="thang11" selected>Tháng 11</option>
+              <option value="14days">14 Ngày gần nhất</option>
+              <option value="thang10">Tháng 10</option>
+              <option value="thang9">Tháng 9</option>
+              <option value="thang8">Tháng 8</option>
+            </select>
+          </div>
+
+          <!-- Chọn ngày bắt đầu -->
+          <div>
+            <label class="input-pill-label">Từ ngày:</label>
+            <input type="date" class="styled-search" id="startDateInput" style="padding: 7px 10px; width: 140px;">
+          </div>
+
+          <!-- Chọn ngày kết thúc -->
+          <div>
+            <label class="input-pill-label">Đến ngày:</label>
+            <input type="date" class="styled-search" id="endDateInput" style="padding: 7px 10px; width: 140px;">
+          </div>
+
+          <div style="align-self: flex-end; margin-bottom: 2px;">
+            <button type="button" class="btn-sync-glow" id="btnApplyDateFilter" style="padding: 9px 14px; font-size: 12px; background: linear-gradient(135deg, #059669, #10b981);">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>Lọc Ngày</span>
+            </button>
+          </div>
+
+          <div style="align-self: flex-end; margin-bottom: 2px;">
+            <span class="badge-date-range" id="periodBadge" style="display: none;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span id="periodBadgeText">...</span>
+            </span>
+          </div>
+
+          <!-- Lọc tài khoản -->
+          <div>
+            <label class="input-pill-label">Tài khoản Google:</label>
+            <select class="styled-select" id="accountFilter" style="max-width: 250px;">
+              <option value="ALL">Tất cả tài khoản</option>
+            </select>
+          </div>
+
+          <!-- Lọc trạng thái -->
+          <div>
+            <label class="input-pill-label">Trạng thái sinh lời:</label>
+            <select class="styled-select" id="statusFilter">
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="PROFIT">Chỉ chiến dịch Lời (&gt; 0)</option>
+              <option value="SCALING">Lời tốt (ROAS ≥ 2)</option>
+              <option value="LOSS">Chiến dịch Lỗ (&lt; 0)</option>
+              <option value="WARNING">Cảnh báo / Cắt lỗ</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-group-wrap">
+          <!-- Ô tìm kiếm -->
+          <div>
+            <label class="input-pill-label">Tìm chiến dịch / ID:</label>
+            <input type="text" class="styled-search" id="searchInput" placeholder="Tìm tên camp, ID..." style="width: 230px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW TAB SWITCHER BUTTONS -->
+      <div class="view-tab-nav">
+        <button type="button" class="view-tab-btn active" id="btnTabDashboard">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span>1. Biểu Đồ & Phân Tích (Dashboard)</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="btnTabDetails">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/>
+            <line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          <span>2. Danh Sách Chi Tiết (Chiến Dịch)</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: BIỂU ĐỒ & DASHBOARD PHÂN TÍCH -->
+      <div class="tab-view-content active" id="tabContentDashboard">
+        <!-- Hàng 1: Biểu đồ Sàn/Sản phẩm & Tỷ Trọng Lợi Nhuận -->
+        <div class="charts-grid-2col">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div class="chart-card-title">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                  <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                </svg>
+                <span>Cơ Cấu Chi Phí & Doanh Thu Theo Sàn / Sản Phẩm</span>
+              </div>
+              <span class="text-xs text-muted">Shopee vs Traveloka vs Trip</span>
+            </div>
+            <div class="chart-container-box">
+              <canvas id="chartPlatformComparison"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div class="chart-card-title">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                <span>Lợi Nhuận Ròng Thu Được Theo Từng Nền Tảng</span>
+              </div>
+              <span class="text-xs text-muted">VND Net Profit</span>
+            </div>
+            <div class="chart-container-box">
+              <canvas id="chartPlatformProfit"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hàng 2: Top Chiến Dịch Sinh Lời vs Lỗ -->
+        <div class="charts-grid-2col">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div class="chart-card-title text-success">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                  <polyline points="17 6 23 6 23 12"/>
+                </svg>
+                <span>Top 6 Chiến Dịch Sinh Lời Cao Nhất</span>
+              </div>
+              <span class="text-xs text-muted">Top Winners</span>
+            </div>
+            <div class="chart-container-box">
+              <canvas id="chartTopProfitable"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div class="chart-card-title text-danger">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+                  <polyline points="17 18 23 18 23 12"/>
+                </svg>
+                <span>Top 6 Chiến Dịch Đang Lỗ Cần Tối Ưu</span>
+              </div>
+              <span class="text-xs text-muted">Cảnh Báo Cắt Lỗ</span>
+            </div>
+            <div class="chart-container-box">
+              <canvas id="chartTopLosing"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: DANH SÁCH CHI TIẾT BẢNG CHIẾN DỊCH -->
+      <div class="tab-view-content" id="tabContentDetails">
+        <div class="table-card-wrapper">
+          <div class="table-header-bar">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-sm">Danh Sách Chiến Dịch Chi Tiết</span>
+              <span class="acc-tag font-mono" id="rowCount">0 chiến dịch</span>
+            </div>
+            <div class="text-xs text-muted flex items-center gap-3">
+              <span>💡 Click tiêu đề cột để sắp xếp</span>
+              <span class="flex items-center gap-1"><span class="roas-chip roas-high text-xs">ROAS ≥ 2.0</span> Scale tốt</span>
+              <span class="flex items-center gap-1"><span class="roas-chip roas-low text-xs">Lỗ</span> Cần tối ưu</span>
+            </div>
+          </div>
+
+          <div class="table-scroll-viewport">
+            <table class="data-dense-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;" class="text-center">#</th>
+                  <th data-sort="campName" style="min-width: 260px;">Chiến Dịch & Tài Khoản <span class="sort-icon">⇅</span></th>
+                  <th data-sort="cost" class="text-right" style="min-width: 110px;">Chi Phí <span class="sort-icon">⇅</span></th>
+                  <th data-sort="revenue" class="text-right" style="min-width: 110px;">Doanh Thu <span class="sort-icon">⇅</span></th>
+                  <th data-sort="profit" class="text-right sorted" style="min-width: 120px;">Lợi Nhuận <span class="sort-icon">▼</span></th>
+                  <th data-sort="roas" class="text-center" style="min-width: 80px;">ROAS <span class="sort-icon">⇅</span></th>
+                  <th data-sort="clicks" class="text-right" style="min-width: 80px;">Clicks <span class="sort-icon">⇅</span></th>
+                  <th data-sort="cpc" class="text-right" style="min-width: 80px;">CPC <span class="sort-icon">⇅</span></th>
+                  <th data-sort="cr" class="text-right" style="min-width: 75px;" title="Tỷ lệ chuyển đổi đơn hàng">CR <span class="sort-icon">⇅</span></th>
+                  <th data-sort="conv" class="text-right" style="min-width: 75px;">Đơn <span class="sort-icon">⇅</span></th>
+                  <th data-sort="ctr" class="text-right" style="min-width: 75px;" title="Tỷ lệ nhấp chuột Google Ads">CTR <span class="sort-icon">⇅</span></th>
+                  <th data-sort="cookieDays" class="text-center" style="min-width: 85px;" title="Thời hạn lưu Cookie chuyển đổi của sàn">Cookie <span class="sort-icon">⇅</span></th>
+                  <th data-sort="delayDays" class="text-center" style="min-width: 80px;" title="Số ngày đơn hàng bị delay trước khi ghi nhận">Trễ Đơn <span class="sort-icon">⇅</span></th>
+                  <th style="min-width: 220px;">Đánh Giá & Nhận Xét</th>
+                </tr>
+              </thead>
+              <tbody id="campaignTableBody">
+                <tr>
+                  <td colspan="11" class="text-center py-8 text-muted">
+                    Đang nạp dữ liệu từ Google Sheets...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../shared/js/sidebar-toggle.js"></script>
+  <script src="../shared/js/layout.js"></script>
+  <script src="../shared/js/utils.js"></script>
+  <script src="../shared/js/command-palette.js"></script>
+  <script src="../shared/js/config.local.js"></script>
+  <script src="theo-doi-loi-nhuan.js"></script>
+</body>
+
+</html>

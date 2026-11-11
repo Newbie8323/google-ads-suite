@@ -9,53 +9,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared/css/style.css">
+  <script>
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+      document.documentElement.classList.add('sidebar-is-collapsed');
+    }
+  </script>
   <style>
-    :root {
-      --bg-main: #090d16;
-      --bg-card: #111827;
-      --bg-card-hover: #162032;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(59, 130, 246, 0.4);
-      --text-main: #f8fafc;
-      --text-secondary: #cbd5e1;
-      --text-muted: #94a3b8;
-      --primary: #3b82f6;
-      --primary-glow: rgba(59, 130, 246, 0.2);
-      --success: #10b981;
-      --warning: #f59e0b;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 30px 20px;
-      -webkit-font-smoothing: antialiased;
-      background-image: 
-        radial-gradient(circle at 15% 10%, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 85% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
-    }
-
-    .hub-container {
-      max-width: 1200px;
+    .hub-content-wrap {
+      flex: 1;
+      padding: 36px 40px;
+      overflow-y: auto;
+      max-width: 1400px;
+      margin: 0 auto;
       width: 100%;
     }
 
     /* Header */
     .hub-header {
-      text-align: center;
-      margin-bottom: 45px;
+      margin-bottom: 32px;
     }
 
     .brand-badge {
@@ -69,7 +41,7 @@
       font-size: 13px;
       font-weight: 600;
       color: #93c5fd;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
     .brand-badge .pulse {
@@ -87,10 +59,10 @@
     }
 
     .hub-header h1 {
-      font-size: 34px;
+      font-size: 30px;
       font-weight: 800;
       letter-spacing: -0.02em;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
       -webkit-background-clip: text;
       background-clip: text;
@@ -98,33 +70,42 @@
     }
 
     .hub-header p {
-      font-size: 16px;
+      font-size: 15px;
       color: var(--text-muted);
-      max-width: 620px;
-      margin: 0 auto;
+      max-width: 720px;
       line-height: 1.6;
     }
 
-    /* Grid layout */
+    /* Grid layout 2x2 Balanced & Sleek */
     .tools-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 24px;
-      margin-bottom: 40px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+      margin-bottom: 36px;
+    }
+
+    @media (max-width: 1024px) {
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+      .hub-content-wrap {
+        padding: 24px 20px;
+      }
     }
 
     .tool-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(12px);
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 32px;
+      border-radius: 18px;
+      padding: 24px 26px;
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       overflow: hidden;
     }
@@ -141,10 +122,10 @@
     }
 
     .tool-card:hover {
-      background: var(--bg-card-hover);
+      background: rgba(22, 32, 50, 0.85);
       border-color: var(--border-hover);
-      transform: translateY(-4px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), 0 0 25px var(--primary-glow);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.5), 0 0 20px var(--primary-glow);
     }
 
     .tool-card.card-blue:hover::before {
@@ -155,22 +136,26 @@
       background: linear-gradient(90deg, #10b981, #34d399);
     }
 
+    .tool-card.card-purple:hover::before {
+      background: linear-gradient(90deg, #8b5cf6, #c084fc);
+    }
+
     .tool-card.card-orange:hover::before {
       background: linear-gradient(90deg, #ee4d2d, #ff8a65);
     }
 
     .card-top {
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .icon-wrapper {
-      width: 58px;
-      height: 58px;
+      width: 52px;
+      height: 52px;
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .icon-blue {
@@ -185,6 +170,12 @@
       color: #34d399;
     }
 
+    .icon-purple {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c084fc;
+    }
+
     .icon-orange {
       background: rgba(238, 77, 45, 0.15);
       border: 1px solid rgba(238, 77, 45, 0.3);
@@ -192,9 +183,9 @@
     }
 
     .tool-title {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -211,24 +202,25 @@
 
     .tag-blue { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
     .tag-green { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; }
+    .tag-purple { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
     .tag-orange { background: rgba(238, 77, 45, 0.2); color: #ff8a65; }
 
     .tool-desc {
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--text-muted);
       line-height: 1.6;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .tool-features {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
     }
 
     .tool-features li {
-      font-size: 13px;
+      font-size: 12.5px;
       color: #cbd5e1;
       display: flex;
       align-items: center;
@@ -236,14 +228,14 @@
     }
 
     .tool-features li svg {
-      width: 15px;
-      height: 15px;
+      width: 14px;
+      height: 14px;
       flex-shrink: 0;
       color: #38bdf8;
     }
 
     .card-footer {
-      padding-top: 20px;
+      padding-top: 16px;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
       display: flex;
       align-items: center;
@@ -251,7 +243,7 @@
     }
 
     .open-btn-text {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: #60a5fa;
       display: flex;
@@ -268,12 +260,14 @@
     /* Footer info */
     .hub-footer {
       text-align: center;
-      font-size: 13px;
+      font-size: 12.5px;
       color: #64748b;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 16px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .hub-footer span {
@@ -283,194 +277,247 @@
     }
   </style>
 </head>
-<body>
+<body class="dark-theme">
 
-  <div class="hub-container">
-    <!-- Header -->
-    <header class="hub-header">
-      <div class="brand-badge">
-        <span class="pulse"></span>
-        ADSINSIGHT SUITE • BẢNG ĐIỀU KHIỂN
+  <div class="app-container">
+    <!-- Sidebar Dọc Tự Động Đồng Bộ qua shared/js/layout.js -->
+    <aside class="sidebar"></aside>
+
+    <!-- Nội Dung Chính Trang Chủ -->
+    <main class="hub-content-wrap">
+      <!-- Header -->
+      <header class="hub-header">
+        <div class="brand-badge">
+          <span class="pulse"></span>
+          ADSINSIGHT SUITE • BẢNG ĐIỀU KHIỂN
+        </div>
+        <h1>Google Ads & Affiliate Suite</h1>
+        <p>Chọn công cụ bạn cần sử dụng để phân tích dữ liệu cụm từ tìm kiếm hoặc xử lý báo cáo hoa hồng sàn affiliate.</p>
+      </header>
+
+      <!-- 4 Main Cards Grid 2x2 -->
+      <div class="tools-grid">
+
+        <!-- TOOL 1: LỌC CỤM TỪ TÌM KIẾM -->
+        <a href="loc-cum-tu-tim-kiem/index.html" class="tool-card card-blue">
+          <div class="card-top">
+            <div class="icon-wrapper icon-blue">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.3-4.3"/>
+              </svg>
+            </div>
+            <div class="tool-title">
+              <span>Lọc Cụm Từ Tìm Kiếm</span>
+              <span class="tool-tag tag-blue">Google Ads</span>
+            </div>
+            <p class="tool-desc">
+              Phân tích chuyên sâu file báo cáo cụm từ tìm kiếm (Search Terms), bóc tách cấu trúc URL tiềm năng, quét N-Gram chặn từ khóa rác và phân loại tài khoản theo sản phẩm.
+            </p>
+            <ul class="tool-features">
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Tự nhận diện tài khoản: Shopee, Traveloka, Trip...
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Quét N-Gram (1, 2, 3-Gram) + Bản dịch tiếng Việt
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Tự nhận diện từ đã phủ định trên Google Ads
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Bảng chi tiết: Sắp xếp theo Click, CPC TB, Chi phí
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Sao chép từ khóa & URL loại trừ (Mỗi mục 1 dòng)
+              </li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <span class="text-xs text-muted">Thư mục: /loc-cum-tu-tim-kiem</span>
+            <div class="open-btn-text">
+              Mở công cụ 
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- TOOL 2: NẠP BÁO CÁO AFFILIATE -->
+        <a href="nap-bao-cao-affiliate/index.html" class="tool-card card-green">
+          <div class="card-top">
+            <div class="icon-wrapper icon-green">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" x2="12" y1="3" y2="15"/>
+              </svg>
+            </div>
+            <div class="tool-title">
+              <span>Nạp Báo Cáo Sàn Affiliate</span>
+              <span class="tool-tag tag-green">Google Sheets</span>
+            </div>
+            <p class="tool-desc">
+              Chuẩn hóa file báo cáo hoa hồng sàn affiliate (Massoffer, Ecomobi, Adpia) & báo cáo chi phí Google Ads, tự động đẩy dữ liệu lên Google Sheets qua Apps Script Web App.
+            </p>
+            <ul class="tool-features">
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Google Ads: Nạp báo cáo tổng (Raw_gg) & chi tiết (Raw_gg_detail)
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Massoffer: Đọc tự động file Excel .xlsx từ dòng 7
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Ecomobi: Ghép nhiều file CSV cùng lúc tự động
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Adpia: Tự lọc bỏ cột Product Code thừa
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Đẩy 1-Click lên Google Sheets theo từng ô chỉ định
+              </li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <span class="text-xs text-muted">Thư mục: /nap-bao-cao-affiliate</span>
+            <div class="open-btn-text" style="color: #34d399;">
+              Mở công cụ 
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- TOOL 3: PHÂN TÍCH ĐƠN HÀNG & SẢN PHẨM SHOPEE -->
+        <a href="phan-tich-san-pham-shopee/index.html" class="tool-card card-orange">
+          <div class="card-top">
+            <div class="icon-wrapper icon-orange">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+            <div class="tool-title">
+              <span>Phân Tích Sản Phẩm Shopee</span>
+              <span class="tool-tag tag-orange">Shopee Affiliate</span>
+            </div>
+            <p class="tool-desc">
+              Phân tích chuyên sâu báo cáo đơn hàng (Order Detail), bóc tách GMV, hoa hồng Base vs Brand Bonus, gom nhóm sản phẩm và khôi phục mã tracking GCLID Google Ads.
+            </p>
+            <ul class="tool-features">
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Tự động gom nhóm & xếp hạng Top sản phẩm bán chạy
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Bóc tách hoa hồng: Base vs Thưởng Brand Mall vs Rank
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Khôi phục chuỗi GCLID Google Ads ghép từ Sub 1-4
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Phân bổ tỷ trọng doanh số theo từng Danh mục ngành hàng
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Xuất CSV sản phẩm & 1-Click sao chép danh sách làm từ khóa Ads
+              </li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <span class="text-xs text-muted">Thư mục: /phan-tich-san-pham-shopee</span>
+            <div class="open-btn-text" style="color: #ff8a65;">
+              Mở công cụ 
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- TOOL 4: THEO DÕI LỜI LÃI CHIẾN DỊCH -->
+        <a href="theo-doi-loi-nhuan/index.html" class="tool-card card-purple">
+          <div class="card-top">
+            <div class="icon-wrapper icon-purple">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div class="tool-title">
+              <span>Theo Dõi Lời Lãi Chiến Dịch</span>
+              <span class="tool-tag tag-purple">Báo Cáo 2.0</span>
+            </div>
+            <p class="tool-desc">
+              Đồng bộ trực tiếp từ Google Sheets: Giám sát chi phí, doanh thu, lợi nhuận ròng, ROAS và độ trễ đơn hàng (delay) từng tài khoản và chiến dịch Google Ads.
+            </p>
+            <ul class="tool-features">
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Nút 1-Click đồng bộ dữ liệu thời gian thực từ Google Sheets
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Linh hoạt xem theo Tháng gần nhất, Chu kỳ 14 ngày, hoặc các tháng cũ
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Nổi bật các chỉ số cốt lõi: Chi phí, Doanh thu, CPC, CTR & ROAS
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Theo dõi độ trễ ghi nhận đơn hàng (Delay 1-2 ngày theo sản phẩm)
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Cảnh báo tự động chiến dịch Lời mạnh, Lời nhẹ hoặc Đang lỗ
+              </li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <span class="text-xs text-muted">Thư mục: /theo-doi-loi-nhuan</span>
+            <div class="open-btn-text" style="color: #c084fc;">
+              Mở công cụ 
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </a>
+
       </div>
-      <h1>Google Ads & Affiliate Suite</h1>
-      <p>Chọn công cụ bạn cần sử dụng để phân tích dữ liệu cụm từ tìm kiếm hoặc xử lý báo cáo hoa hồng sàn affiliate.</p>
-    </header>
 
-    <!-- 2 Main Cards -->
-    <div class="tools-grid">
-
-      <!-- TOOL 1: LỌC CỤM TỪ TÌM KIẾM -->
-      <a href="loc-cum-tu-tim-kiem/index.html" class="tool-card card-blue">
-        <div class="card-top">
-          <div class="icon-wrapper icon-blue">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.3-4.3"/>
-            </svg>
-          </div>
-          <div class="tool-title">
-            <span>Lọc Cụm Từ Tìm Kiếm</span>
-            <span class="tool-tag tag-blue">Google Ads</span>
-          </div>
-          <p class="tool-desc">
-            Phân tích chuyên sâu file báo cáo cụm từ tìm kiếm (Search Terms), bóc tách cấu trúc URL tiềm năng, quét N-Gram chặn từ khóa rác và phân loại tài khoản theo sản phẩm.
-          </p>
-          <ul class="tool-features">
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Tự nhận diện tài khoản: Shopee, Traveloka, Trip...
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Quét N-Gram (1, 2, 3-Gram) + Bản dịch tiếng Việt
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Tự nhận diện từ đã phủ định trên Google Ads
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Bảng chi tiết: Sắp xếp theo Click, CPC TB, Chi phí
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Sao chép từ khóa & URL loại trừ (Mỗi mục 1 dòng)
-            </li>
-          </ul>
-        </div>
-        <div class="card-footer">
-          <span class="text-xs text-muted">Thư mục: /loc-cum-tu-tim-kiem</span>
-          <div class="open-btn-text">
-            Mở công cụ 
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </div>
-        </div>
-      </a>
-
-      <!-- TOOL 2: NẠP BÁO CÁO AFFILIATE -->
-      <a href="nap-bao-cao-affiliate/index.html" class="tool-card card-green">
-        <div class="card-top">
-          <div class="icon-wrapper icon-green">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" x2="12" y1="3" y2="15"/>
-            </svg>
-          </div>
-          <div class="tool-title">
-            <span>Nạp Báo Cáo Sàn Affiliate</span>
-            <span class="tool-tag tag-green">Google Sheets</span>
-          </div>
-          <p class="tool-desc">
-            Chuẩn hóa file báo cáo hoa hồng sàn affiliate (Massoffer, Ecomobi, Adpia) & báo cáo chi phí Google Ads, tự động đẩy dữ liệu lên Google Sheets qua Apps Script Web App.
-          </p>
-          <ul class="tool-features">
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Google Ads: Nạp báo cáo tổng (Raw_gg) & báo cáo chi tiết (Raw_gg_detail)
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Massoffer: Đọc tự động file Excel .xlsx từ dòng 7
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Ecomobi: Ghép nhiều file CSV cùng lúc tự động
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Adpia: Tự lọc bỏ cột Product Code thừa
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Đẩy 1-Click lên Google Sheets theo từng ô chỉ định
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Hỗ trợ sao chép dạng TSV để dán tay nhanh
-            </li>
-          </ul>
-        </div>
-        <div class="card-footer">
-          <span class="text-xs text-muted">Thư mục: /nap-bao-cao-affiliate</span>
-          <div class="open-btn-text" style="color: #34d399;">
-            Mở công cụ 
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </div>
-        </div>
-      </a>
-
-      <!-- TOOL 3: PHÂN TÍCH ĐƠN HÀNG & SẢN PHẨM SHOPEE -->
-      <a href="phan-tich-san-pham-shopee/index.html" class="tool-card card-orange">
-        <div class="card-top">
-          <div class="icon-wrapper icon-orange">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-          </div>
-          <div class="tool-title">
-            <span>Phân Tích Sản Phẩm Shopee</span>
-            <span class="tool-tag tag-orange">Shopee Affiliate</span>
-          </div>
-          <p class="tool-desc">
-            Phân tích chuyên sâu báo cáo đơn hàng (Order Detail), bóc tách GMV, hoa hồng Base vs Brand Bonus, gom nhóm sản phẩm và khôi phục mã tracking GCLID Google Ads.
-          </p>
-          <ul class="tool-features">
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Tự động gom nhóm & xếp hạng Top sản phẩm bán chạy
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Bóc tách hoa hồng: Base vs Thưởng Brand Mall vs Rank
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Khôi phục chuỗi GCLID Google Ads ghép từ Sub 1-4
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Phân bổ tỷ trọng doanh số theo từng Danh mục ngành hàng
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-              Xuất CSV sản phẩm & 1-Click sao chép danh sách làm từ khóa Ads
-            </li>
-          </ul>
-        </div>
-        <div class="card-footer">
-          <span class="text-xs text-muted">Thư mục: /phan-tich-san-pham-shopee</span>
-          <div class="open-btn-text" style="color: #ff8a65;">
-            Mở công cụ 
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </div>
-        </div>
-      </a>
-
-    </div>
-
-    <!-- Footer -->
-    <footer class="hub-footer">
-      <span>🛡️ 100% Offline & Bảo mật</span>
-      <span>•</span>
-      <span>⚡ Xử lý trực tiếp trên trình duyệt</span>
-      <span>•</span>
-      <span>📁 Không gửi dữ liệu ra bên ngoài</span>
-      <span>•</span>
-      <span>⌨️ Nhấn <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.75rem;">Ctrl + K</kbd> để tìm kiếm nhanh</span>
-    </footer>
+      <!-- Footer -->
+      <footer class="hub-footer">
+        <span>🛡️ 100% Offline & Bảo mật</span>
+        <span>•</span>
+        <span>⚡ Xử lý trực tiếp trên trình duyệt</span>
+        <span>•</span>
+        <span>📁 Không gửi dữ liệu ra bên ngoài</span>
+        <span>•</span>
+        <span>⌨️ Nhấn <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.75rem;">Ctrl + K</kbd> để tìm kiếm nhanh</span>
+      </footer>
+    </main>
   </div>
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="shared/css/style.css">
+  <script src="shared/js/sidebar-toggle.js"></script>
+  <script src="shared/js/layout.js"></script>
   <script src="shared/js/command-palette.js"></script>
 </body>
 </html>

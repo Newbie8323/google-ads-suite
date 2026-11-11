@@ -1872,10 +1872,13 @@ function downloadCSV(content, filename) {
   showToast('Đã tải xuống file ' + filename);
 }
 
-// Nạp dữ liệu mẫu Order Detail có sẵn
+// Nạp dữ liệu mẫu Order Detail có sẵn trong data/sample_data
 function loadSampleShopeeData() {
-  fetch('Order_detail_view_items_data_30-10-2026-104250.csv')
-    .then(res => res.text())
+  fetch('../data/sample_data/Order_detail_view_items_data_03-11-2026-135705.csv')
+    .then(res => {
+      if (!res.ok) throw new Error('Không thể tải file mẫu từ thư mục data/sample_data.');
+      return res.text();
+    })
     .then(csv => {
       Papa.parse(csv, {
         header: true,

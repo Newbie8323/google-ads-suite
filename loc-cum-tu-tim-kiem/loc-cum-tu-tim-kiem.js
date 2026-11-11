@@ -846,9 +846,9 @@ function clearUploadedSearchTermsData() {
   showToast('Đã xóa dữ liệu file đã nạp. Bạn có thể tải lên file mới.');
 }
 
-// Nạp file dữ liệu mẫu Demo (Shopee Search Terms có sẵn trong sample_data)
+// Nạp file dữ liệu mẫu Demo (Shopee Search Terms có sẵn trong data/sample_data)
 function loadSampleDemoData() {
-  const samplePath = 'sample_data/Báo cáo cụm từ tìm kiếm quảng cáo động - Mẫu Shopee.csv';
+  const samplePath = '../data/sample_data/Báo cáo cụm từ tìm kiếm quảng cáo động - Mẫu Shopee.csv';
   showToast('⏳ Đang nạp file dữ liệu mẫu Shopee...');
   
   fetch(samplePath)
@@ -2292,7 +2292,81 @@ function renderNgramTable() {
     data = data.filter(d => !d.isExcludedByGoogle);
   }
 
+  // Khởi tạo Web Worker tính toán N-Gram chạy ngầm (chống đơ UI khi file lớn)
+  let ngramWorker = null;
+  try {
+    ngramWorker = new Worker('ngram-worker.js');
+  } catch (err) {
+    console.warn('Web Worker not supported or restricted by file protocol, fallback to main thread:', err);
+  }
+
+  function renderNgramListFromData(list, totalItems) {
+    const tbody = document.getElementById('ngramTableBody');
+    if (!tbody) return;
+
+    // Cập nhật mũi tên header bảng Tab 2 & đồng bộ dropdown sort
+    updateNgramHeaderSortArrows();
+
+    // Xử lý phân trang Tab 2
+    const limitVal = document.getElementById('ngramLimitSelect')?.value || '100';
+    let pageSize = totalItems;
+    if (limitVal !== 'ALL') {
+      pageSize = parseInt(limitVal, 10) || 100;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    if (ngramCurrentPage > totalPages) ngramCurrentPage = totalPages;
+    if (ngramCurrentPage < 1) ngramCurrentPage = 1;
+
+    const startIndex = (ngramCurrentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    const pageItems = list.slice(startIndex, endIndex);
+
+    let rows = '';
+    pageItems.forEach((item, idx) => {
+      const isChecked = ngramSelectedWords.has(item.word);
+      const transId = `term_len_trans_${startIndex + idx}`;
+      const trans = translateNgramWord(item.word, transId);
+      rows += `
+        <tr>
+          <td>
+            <input type="checkbox" class="ngram-row-chk" data-word="${escapeHtml(item.word)}" ${isChecked ? 'checked' : ''} onchange="toggleNgramSelection('${escapeHtml(item.word)}', this.checked)">
+          </td>
+          <td class="font-semibold text-white">${escapeHtml(item.word)}</td>
+          <td class="ngram-translation" id="${transId}">${escapeHtml(trans)}</td>
+          <td class="text-primary font-bold">${item.count.toLocaleString()}</td>
+          <td>${item.clicks.toLocaleString()}</td>
+          <td>${formatCurrency(Math.round(item.cost))}</td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rows || `<tr><td colspan="6" class="text-center text-muted">Không tìm thấy cụm từ nào có ${currentNgramType === 4 ? '4 từ trở lên' : currentNgramType + ' từ'}</td></tr>`;
+
+    // Render thanh phân trang
+    renderNgramPaginationBar(totalItems, startIndex, endIndex, totalPages);
+  }
+
   // Lọc cụm từ tìm kiếm thực tế theo số lượng từ (1 từ, 2 từ, 3 từ, 4 từ trở lên)
+  if (ngramWorker) {
+    ngramWorker.onmessage = function (e) {
+      if (e.data.type === 'NGRAM_RESULT') {
+        const list = e.data.list;
+        renderNgramListFromData(list, list.length);
+      }
+    };
+
+    ngramWorker.postMessage({
+      type: 'COMPUTE_NGRAM',
+      data: data,
+      ngramType: currentNgramType,
+      searchFilter: searchFilter,
+      sortColumn: ngramSortColumn,
+      sortOrder: ngramSortOrder
+    });
+    return;
+  }
+
   const termMap = {};
 
   data.forEach(d => {
@@ -2358,48 +2432,7 @@ function renderNgramTable() {
     return ngramSortOrder === 'asc' ? valA - valB : valB - valA;
   });
 
-  // Cập nhật mũi tên header bảng Tab 2 & đồng bộ dropdown sort
-  updateNgramHeaderSortArrows();
-
-  // Xử lý phân trang Tab 2
-  const limitVal = document.getElementById('ngramLimitSelect')?.value || '100';
-  const totalItems = list.length;
-  let pageSize = totalItems;
-  if (limitVal !== 'ALL') {
-    pageSize = parseInt(limitVal, 10) || 100;
-  }
-
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  if (ngramCurrentPage > totalPages) ngramCurrentPage = totalPages;
-  if (ngramCurrentPage < 1) ngramCurrentPage = 1;
-
-  const startIndex = (ngramCurrentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const pageItems = list.slice(startIndex, endIndex);
-
-  let rows = '';
-  pageItems.forEach((item, idx) => {
-    const isChecked = ngramSelectedWords.has(item.word);
-    const transId = `term_len_trans_${startIndex + idx}`;
-    const trans = translateNgramWord(item.word, transId);
-    rows += `
-      <tr>
-        <td>
-          <input type="checkbox" class="ngram-row-chk" data-word="${escapeHtml(item.word)}" ${isChecked ? 'checked' : ''} onchange="toggleNgramSelection('${escapeHtml(item.word)}', this.checked)">
-        </td>
-        <td class="font-semibold text-white">${escapeHtml(item.word)}</td>
-        <td class="ngram-translation" id="${transId}">${escapeHtml(trans)}</td>
-        <td class="text-primary font-bold">${item.count.toLocaleString()}</td>
-        <td>${item.clicks.toLocaleString()}</td>
-        <td>${formatCurrency(Math.round(item.cost))}</td>
-      </tr>
-    `;
-  });
-
-  tbody.innerHTML = rows || `<tr><td colspan="6" class="text-center text-muted">Không tìm thấy cụm từ nào có ${currentNgramType === 4 ? '4 từ trở lên' : currentNgramType + ' từ'}</td></tr>`;
-
-  // Render thanh phân trang
-  renderNgramPaginationBar(totalItems, startIndex, endIndex, totalPages);
+  renderNgramListFromData(list, list.length);
 }
 
 // Cập nhật mũi tên sắp xếp header bảng Tab 2

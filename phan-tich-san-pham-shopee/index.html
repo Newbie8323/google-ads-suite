@@ -10,6 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/css/style.css">
+  <script>
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+      document.documentElement.classList.add('sidebar-is-collapsed');
+    }
+  </script>
   <!-- SheetJS & PapaParse Local Vendor (Offline First) -->
   <script src="../shared/vendor/xlsx.full.min.js"></script>
   <script src="../shared/vendor/papaparse.min.js"></script>
@@ -197,56 +202,8 @@
 </head>
 <body class="dark-theme theme-shopee-orange">
   <div class="app-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="logo-icon" style="background: linear-gradient(135deg, #ee4d2d 0%, #ff8a65 100%); box-shadow: 0 0 15px rgba(238, 77, 45, 0.35);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 0 1-8 0"/>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <h2>AdsInsight<span class="pro-badge" style="background: rgba(238, 77, 45, 0.2); color: #ff8a65; border-color: rgba(238, 77, 45, 0.4);">SHOPEE</span></h2>
-          <p>Product & ROAS Analytics</p>
-        </div>
-        <button type="button" class="sidebar-toggle-btn" id="btnToggleSidebar" title="Thu gọn / Mở rộng">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-          </svg>
-        </button>
-      </div>
-
-      <nav class="nav-menu">
-        <a href="../index.html" class="nav-item" style="text-decoration: none;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span>Trang Chủ Hub</span>
-        </a>
-        <a href="../loc-cum-tu-tim-kiem/index.html" class="nav-item" style="text-decoration: none;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <span>Lọc Cụm Từ Tìm Kiếm</span>
-        </a>
-        <a href="../nap-bao-cao-affiliate/index.html" class="nav-item" style="text-decoration: none;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Nạp Báo Cáo Affiliate</span>
-        </a>
-        <a href="index.html" class="nav-item active" style="text-decoration: none; border-left-color: #ee4d2d; color: #ff8a65; background: rgba(238, 77, 45, 0.1);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          <span>Phân Tích Sản Phẩm Shopee</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="status-card">
-          <div class="pulse-indicator" style="background: #ee4d2d; box-shadow: 0 0 8px #ee4d2d;"></div>
-          <div>
-            <div class="text-sm font-semibold">Bảo mật & Tự động</div>
-            <div class="text-xs text-muted">Google Sheets JSONP Live Sync</div>
-          </div>
-        </div>
-      </div>
-    </aside>
+    <!-- Navigation Sidebar (Tự động đồng bộ qua shared/js/layout.js) -->
+    <aside class="sidebar"></aside>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -679,6 +636,8 @@
 
   <!-- Scripts -->
   <script src="../shared/js/sidebar-toggle.js"></script>
+  <script src="../shared/js/layout.js"></script>
+  <script src="../shared/js/utils.js"></script>
   <script src="../shared/js/command-palette.js"></script>
   <script src="../shared/js/config.local.js"></script>
   <script src="../shared/js/db.js"></script>
