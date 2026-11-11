@@ -824,9 +824,24 @@ function clearUploadedSearchTermsData() {
   const btnClear = document.getElementById('btnClearUploadedFiles');
   if (btnClear) btnClear.style.display = 'none';
 
+  // Đặt lại lựa chọn tài khoản và chiến dịch về ALL
+  const accSelect = document.getElementById('stAccountSelect');
+  if (accSelect) accSelect.value = 'ALL';
+  const campSelect = document.getElementById('stCampaignSelect');
+  if (campSelect) campSelect.value = 'ALL';
+
+  // Reset phân trang và dữ liệu lựa chọn N-Gram
+  ngramCurrentPage = 1;
+  rawCurrentPage = 1;
+  ngramSelectedWords.clear();
+
   refreshAccountDropdown();
   populateCampaignDropdown();
   applyHierarchyFilters();
+
+  // Đảm bảo cả hai chế độ của Subtab 2 (Bảng chi tiết & Cụm từ ngắn) đều được reset UI ngay lập tức
+  renderRawTermsTable();
+  renderNgramTable();
 
   showToast('Đã xóa dữ liệu file đã nạp. Bạn có thể tải lên file mới.');
 }
@@ -887,96 +902,118 @@ function handleSearchTermsFileUpload(e) {
 
   allSearchTermsData = []; // Reset on new upload
   fileAccountMap = {};
-  let loadedCount = 0;
+
+  // Reset dropdown chọn tài khoản & chiến dịch về mặc định
+  const accSelect = document.getElementById('stAccountSelect');
+  if (accSelect) accSelect.value = 'ALL';
+  const campSelect = document.getElementById('stCampaignSelect');
+  if (campSelect) campSelect.value = 'ALL';
+
+  // Hiển thị trạng thái đang đọc
+  const badge = document.getElementById('stFileStatusBadge');
+  if (badge) {
+    badge.innerHTML = `<span class="text-muted">⏳ Đang đọc ${files.length} file...</span>`;
+  }
 
   // Track product file counts to handle multiple files for same product e.g. "Shopee 1", "Shopee 2"
   const productFileCounts = {};
 
-  Array.from(files).forEach((file, fileIdx) => {
-    const rawFileName = file.name.replace(/\.[^/.]+$/, "");
-    const reader = new FileReader();
+  const filePromises = Array.from(files).map((file) => {
+    return new Promise((resolve) => {
+      const rawFileName = file.name.replace(/\.[^/.]+$/, "");
+      const reader = new FileReader();
 
-    reader.onload = (evt) => {
-      const buffer = evt.target.result;
-      const uint8 = new Uint8Array(buffer);
-      let encoding = 'utf-8';
+      reader.onload = (evt) => {
+        const buffer = evt.target.result;
+        const uint8 = new Uint8Array(buffer);
+        let encoding = 'utf-8';
 
-      // Detect UTF-16 LE BOM (FF FE) or UTF-16 BE BOM (FE FF)
-      if (uint8.length >= 2 && uint8[0] === 0xFF && uint8[1] === 0xFE) {
-        encoding = 'utf-16le';
-      } else if (uint8.length >= 2 && uint8[0] === 0xFE && uint8[1] === 0xFF) {
-        encoding = 'utf-16be';
-      } else {
-        let nullCount = 0;
-        const checkLen = Math.min(200, uint8.length);
-        for (let i = 1; i < checkLen; i += 2) {
-          if (uint8[i] === 0) nullCount++;
-        }
-        if (nullCount > checkLen / 4) {
+        // Detect UTF-16 LE BOM (FF FE) or UTF-16 BE BOM (FE FF)
+        if (uint8.length >= 2 && uint8[0] === 0xFF && uint8[1] === 0xFE) {
           encoding = 'utf-16le';
+        } else if (uint8.length >= 2 && uint8[0] === 0xFE && uint8[1] === 0xFF) {
+          encoding = 'utf-16be';
+        } else {
+          let nullCount = 0;
+          const checkLen = Math.min(200, uint8.length);
+          for (let i = 1; i < checkLen; i += 2) {
+            if (uint8[i] === 0) nullCount++;
+          }
+          if (nullCount > checkLen / 4) {
+            encoding = 'utf-16le';
+          }
         }
-      }
 
-      const decoder = new TextDecoder(encoding);
-      const csvText = decoder.decode(uint8);
+        const decoder = new TextDecoder(encoding);
+        const csvText = decoder.decode(uint8);
 
-      // Determine product for this whole file
-      const fileLower = (file.name + " " + csvText.slice(0, 30000)).toLowerCase();
-      let fileProduct = "Khác";
-      if (fileLower.includes("shopee")) {
-        fileProduct = "Shopee";
-      } else if (fileLower.includes("traveloka")) {
-        fileProduct = "Traveloka";
-      } else if (fileLower.includes("trip.com") || fileLower.includes("trip")) {
-        fileProduct = "Trip";
-      } else if (activeProductFilter !== 'auto') {
-        fileProduct = activeProductFilter;
-      }
-
-      // If user selected a specific product tab, prioritize it
-      if (activeProductFilter !== 'auto') {
-        fileProduct = activeProductFilter;
-      }
-
-      // Assign an account name based on product
-      productFileCounts[fileProduct] = (productFileCounts[fileProduct] || 0) + 1;
-      let accountDisplayName = fileProduct !== "Khác" ? `Tài khoản ${fileProduct}` : `Tài khoản ${rawFileName}`;
-      if (files.length > 1 && fileProduct !== "Khác" && productFileCounts[fileProduct] > 1) {
-        accountDisplayName = `Tài khoản ${fileProduct} (${productFileCounts[fileProduct]})`;
-      }
-
-      parseAndIngestSearchTermsFile(csvText, accountDisplayName, fileProduct);
-      loadedCount++;
-      if (loadedCount === files.length) {
-        const badge = document.getElementById('stFileStatusBadge');
-        if (badge) {
-          badge.innerHTML = `<span class="text-success font-semibold">✓ Đã nạp ${files.length} file (${allSearchTermsData.length.toLocaleString()} dòng)</span>`;
+        // Determine product for this whole file
+        const fileLower = (file.name + " " + csvText.slice(0, 30000)).toLowerCase();
+        let fileProduct = "Khác";
+        if (fileLower.includes("shopee")) {
+          fileProduct = "Shopee";
+        } else if (fileLower.includes("traveloka")) {
+          fileProduct = "Traveloka";
+        } else if (fileLower.includes("trip.com") || fileLower.includes("trip")) {
+          fileProduct = "Trip";
+        } else if (activeProductFilter !== 'auto') {
+          fileProduct = activeProductFilter;
         }
-        const btnClear = document.getElementById('btnClearUploadedFiles');
-        if (btnClear) btnClear.style.display = 'inline-flex';
-        showToast(`✅ Đã nạp thành công ${files.length} file tài khoản (${allSearchTermsData.length.toLocaleString()} dòng)!`);
-      }
-    };
 
-    reader.readAsArrayBuffer(file);
+        // If user selected a specific product tab, prioritize it
+        if (activeProductFilter !== 'auto') {
+          fileProduct = activeProductFilter;
+        }
+
+        // Assign an account name based on product
+        productFileCounts[fileProduct] = (productFileCounts[fileProduct] || 0) + 1;
+        let accountDisplayName = fileProduct !== "Khác" ? `Tài khoản ${fileProduct}` : `Tài khoản ${rawFileName}`;
+        if (files.length > 1 && fileProduct !== "Khác" && productFileCounts[fileProduct] > 1) {
+          accountDisplayName = `Tài khoản ${fileProduct} (${productFileCounts[fileProduct]})`;
+        }
+
+        parseAndIngestSearchTermsFile(csvText, accountDisplayName, fileProduct)
+          .then(() => resolve())
+          .catch(() => resolve());
+      };
+
+      reader.onerror = () => resolve();
+      reader.readAsArrayBuffer(file);
+    });
+  });
+
+  Promise.all(filePromises).then(() => {
+    refreshAccountDropdown();
+    populateCampaignDropdown();
+    applyHierarchyFilters();
+
+    const finalBadge = document.getElementById('stFileStatusBadge');
+    if (finalBadge) {
+      finalBadge.innerHTML = `<span class="text-success font-semibold">✓ Đã nạp ${files.length} file (${allSearchTermsData.length.toLocaleString()} dòng)</span>`;
+    }
+    const btnClear = document.getElementById('btnClearUploadedFiles');
+    if (btnClear) btnClear.style.display = 'inline-flex';
+    showToast(`✅ Đã nạp thành công ${files.length} file tài khoản (${allSearchTermsData.length.toLocaleString()} dòng)!`);
   });
 }
 
-// Parse CSV content and extract data
+// Parse CSV content and extract data (trả về Promise để đồng bộ hóa)
 function parseAndIngestSearchTermsFile(csvText, assignedAccountName, fallbackProduct) {
-  // Strip BOM if present
-  if (csvText.charCodeAt(0) === 0xFEFF) {
-    csvText = csvText.slice(1);
-  }
+  return new Promise((resolve) => {
+    // Strip BOM if present
+    if (csvText.charCodeAt(0) === 0xFEFF) {
+      csvText = csvText.slice(1);
+    }
 
-  Papa.parse(csvText, {
-    skipEmptyLines: 'greedy',
-    complete: (results) => {
-      let rows = results.data;
-      if (!rows || rows.length === 0) {
-        showToast('File trống hoặc không đọc được nội dung.', true);
-        return;
-      }
+    Papa.parse(csvText, {
+      skipEmptyLines: 'greedy',
+      complete: (results) => {
+        let rows = results.data;
+        if (!rows || rows.length === 0) {
+          showToast('File trống hoặc không đọc được nội dung.', true);
+          resolve();
+          return;
+        }
 
       // If delimiter wasn't detected properly (e.g., TSV)
       if (rows.length > 0 && rows[0].length === 1 && typeof rows[0][0] === 'string' && rows[0][0].includes('\t')) {
@@ -1210,11 +1247,14 @@ function parseAndIngestSearchTermsFile(csvText, assignedAccountName, fallbackPro
         });
       });
 
-      refreshAccountDropdown();
-      populateCampaignDropdown();
-      applyHierarchyFilters();
+      resolve();
+    },
+    error: (err) => {
+      showToast('Lỗi khi đọc file CSV: ' + (err?.message || err), true);
+      resolve();
     }
   });
+});
 }
 
 // Populate Account Dropdown
@@ -2864,7 +2904,12 @@ function renderActiveSubtab(targetId = currentActiveSubtabId) {
   } else if (targetId === 'sub-ngram-cleaner') {
     renderNgramTable();
   } else if (targetId === 'sub-terms-table') {
-    renderRawTermsTable();
+    const viewNgram = document.getElementById('termContainerNgramView');
+    if (viewNgram && viewNgram.style.display !== 'none') {
+      renderNgramTable();
+    } else {
+      renderRawTermsTable();
+    }
   } else if (targetId === 'sub-adult-panel') {
     renderAdultPanel();
   } else if (targetId === 'sub-negatives-mgr') {
