@@ -2293,15 +2293,69 @@ function renderNgramTable() {
   }
 
   // Khởi tạo Web Worker tính toán N-Gram chạy ngầm (chống đơ UI khi file lớn)
+  // Hỗ trợ cả file:/// (Inline Blob URL) lẫn HTTP/HTTPS
   let ngramWorker = null;
   try {
     ngramWorker = new Worker('ngram-worker.js');
   } catch (err) {
-    console.warn('Web Worker not supported or restricted by file protocol, fallback to main thread:', err);
+    try {
+      const workerCode = `
+        self.onmessage = function (e) {
+          const { type, data, ngramType, searchFilter, sortColumn, sortOrder } = e.data;
+          if (type === 'COMPUTE_NGRAM') {
+            const termMap = {};
+            for (let i = 0; i < data.length; i++) {
+              const d = data[i];
+              const rawTerm = (d.term || '').trim();
+              if (!rawTerm) continue;
+              const words = rawTerm.replace(/[^\\p{L}\\p{N}\\s]/gu, ' ').trim().split(/\\s+/).filter(Boolean);
+              const wordCount = words.length;
+              let match = false;
+              if (ngramType === 1 && wordCount === 1) match = true;
+              else if (ngramType === 2 && wordCount === 2) match = true;
+              else if (ngramType === 3 && wordCount === 3) match = true;
+              else if (ngramType === 4 && wordCount >= 4) match = true;
+              if (match) {
+                const key = rawTerm.toLowerCase();
+                if (!termMap[key]) {
+                  termMap[key] = { word: rawTerm, count: 0, clicks: 0, impressions: 0, cost: 0, conversions: 0 };
+                }
+                termMap[key].count++;
+                termMap[key].clicks += (d.clicks || 0);
+                termMap[key].impressions += (d.impressions || 0);
+                termMap[key].cost += (d.cost || 0);
+                termMap[key].conversions += (d.conversions || 0);
+              }
+            }
+            let list = Object.values(termMap);
+            if (searchFilter) {
+              const filterLow = searchFilter.toLowerCase();
+              list = list.filter(item => item.word.toLowerCase().includes(filterLow));
+            }
+            list.sort((a, b) => {
+              let valA = a[sortColumn];
+              let valB = b[sortColumn];
+              if (typeof valA === 'string') {
+                const comp = valA.localeCompare(valB);
+                return sortOrder === 'asc' ? comp : -comp;
+              }
+              valA = Number(valA) || 0;
+              valB = Number(valB) || 0;
+              return sortOrder === 'asc' ? (valA - valB) : (valB - valA);
+            });
+            self.postMessage({ type: 'NGRAM_RESULT', list: list });
+          }
+        };
+      `;
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      ngramWorker = new Worker(URL.createObjectURL(blob));
+    } catch (blobErr) {
+      // Fallback về main thread nếu trình duyệt chặn hoàn toàn Worker
+    }
   }
 
   function renderNgramListFromData(list, totalItems) {
-    const tbody = document.getElementById('ngramTableBody');
+    const tbody = document.querySelector('#ngramTable tbody');
     if (!tbody) return;
 
     // Cập nhật mũi tên header bảng Tab 2 & đồng bộ dropdown sort
