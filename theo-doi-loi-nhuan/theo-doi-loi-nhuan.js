@@ -65,6 +65,7 @@
   const elKpiTotalCamp = document.getElementById('kpiTotalCamp');
   const elKpiProfitableCamp = document.getElementById('kpiProfitableCamp');
   const elPeriodBadgeText = document.getElementById('periodBadgeText');
+  const elHeaderPeriodText = document.getElementById('headerPeriodText');
 
   // Table
   const elTableBody = document.getElementById('campaignTableBody');
@@ -91,20 +92,8 @@
       });
     }
 
-    // Tự động mở bảng lịch khi click vào bất kỳ vị trí nào trên ô input ngày
-    [elStartDateInput, elEndDateInput].forEach(input => {
-      if (input) {
-        input.addEventListener('click', () => {
-          try {
-            if (typeof input.showPicker === 'function') {
-              input.showPicker();
-            }
-          } catch (err) {
-            // Fallback nếu trình duyệt đã mở popup tự nhiên
-          }
-        });
-      }
-    });
+    // Khởi tạo Custom Datepicker Popup chuẩn dd/mm/yyyy
+    initCustomDatepickers();
 
     // Nút Lọc Ngày Tùy Chọn
     if (elBtnApplyDateFilter) {
@@ -219,8 +208,9 @@
 
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+      const dateStr = formatVnDate(now);
       if (elLastSyncTime) {
-        elLastSyncTime.textContent = `Đồng bộ lúc: ${timeStr}`;
+        elLastSyncTime.textContent = `Đồng bộ lúc: ${timeStr} - ${dateStr}`;
       }
     } catch (err) {
       console.error('Lỗi nạp dữ liệu Google Sheets:', err);
@@ -311,22 +301,31 @@
 
     if (elPeriodBadge) {
       if (periodMeta.from && periodMeta.to) {
+        const displayRange = `${formatToDisplayVnDate(periodMeta.from)} → ${formatToDisplayVnDate(periodMeta.to)}`;
         if (elPeriodBadgeText) {
-          elPeriodBadgeText.textContent = `${periodMeta.from} → ${periodMeta.to}`;
+          elPeriodBadgeText.textContent = displayRange;
         } else {
-          elPeriodBadge.textContent = `${periodMeta.from} → ${periodMeta.to}`;
+          elPeriodBadge.textContent = displayRange;
         }
         elPeriodBadge.style.display = 'inline-flex';
 
-        // Luôn cập nhật chính xác giá trị vào 2 ô input ngày theo chu kỳ vừa chọn
+        if (elHeaderPeriodText) {
+          elHeaderPeriodText.textContent = displayRange;
+        }
+
+        // Luôn cập nhật chính xác giá trị vào 2 ô input ngày theo chu kỳ vừa chọn (định dạng dd/mm/yyyy)
         if (elStartDateInput && periodMeta.from) {
-          elStartDateInput.value = formatToInputDate(periodMeta.from);
+          elStartDateInput.value = formatToDisplayVnDate(periodMeta.from);
         }
         if (elEndDateInput && periodMeta.to) {
-          elEndDateInput.value = formatToInputDate(periodMeta.to);
+          elEndDateInput.value = formatToDisplayVnDate(periodMeta.to);
         }
       } else {
         elPeriodBadge.style.display = 'none';
+        if (elHeaderPeriodText) {
+          const tabName = TABS_CONFIG[currentTabKey]?.name || 'Mặc định';
+          elHeaderPeriodText.textContent = tabName;
+        }
       }
     }
 
@@ -459,26 +458,43 @@
   }
 
   function applyCustomDateFilter() {
-    const startVal = elStartDateInput ? elStartDateInput.value : '';
-    const endVal = elEndDateInput ? elEndDateInput.value : '';
+    const startVal = elStartDateInput ? elStartDateInput.value.trim() : '';
+    const endVal = elEndDateInput ? elEndDateInput.value.trim() : '';
 
     if (!startVal || !endVal) {
-      alert('Vui lòng chọn cả Ngày bắt đầu và Ngày kết thúc.');
+      alert('Vui lòng nhập cả Ngày bắt đầu và Ngày kết thúc (định dạng dd/mm/yyyy).');
       return;
     }
 
-    const startDate = new Date(startVal + 'T00:00:00');
-    const endDate = new Date(endVal + 'T23:59:59');
+    const startDate = parseFlexibleDate(startVal);
+    const endDate = parseFlexibleDate(endVal);
+
+    if (!startDate || !endDate) {
+      alert('Định dạng ngày không hợp lệ. Vui lòng nhập đúng định dạng ngày/tháng/năm (VD: 01/11/2026).');
+      return;
+    }
+
+    // Set mốc thời gian 00:00:00 và 23:59:59
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
 
     if (startDate > endDate) {
       alert('Ngày bắt đầu không được lớn hơn Ngày kết thúc.');
       return;
     }
 
+    // Đồng bộ lại giá trị chuẩn vào ô input (dd/mm/yyyy)
+    if (elStartDateInput) elStartDateInput.value = formatVnDate(startDate);
+    if (elEndDateInput) elEndDateInput.value = formatVnDate(endDate);
+
     // Cập nhật badge hiển thị
+    const customRangeDisplay = `${formatVnDate(startDate)} → ${formatVnDate(endDate)}`;
+    if (elHeaderPeriodText) {
+      elHeaderPeriodText.textContent = `${customRangeDisplay} (Tùy chọn)`;
+    }
     if (elPeriodBadge) {
       if (elPeriodBadgeText) {
-        elPeriodBadgeText.textContent = `${formatVnDate(startDate)} → ${formatVnDate(endDate)}`;
+        elPeriodBadgeText.textContent = customRangeDisplay;
       }
       elPeriodBadge.style.display = 'inline-flex';
     }
@@ -873,9 +889,9 @@
     const ctx = canvas.getContext('2d');
     if (chartInstances.topProfitable) chartInstances.topProfitable.destroy();
 
-    const top6 = [...filteredCampaigns].sort((a, b) => b.profit - a.profit).slice(0, 6);
-    const labels = top6.map(c => c.campName.length > 24 ? c.campName.slice(0, 24) + '...' : c.campName);
-    const profits = top6.map(c => Math.round(c.profit));
+    const top6 = [...filteredCampaigns].filter(c => c.profit > 0).sort((a, b) => b.profit - a.profit).slice(0, 6);
+    const labels = top6.length > 0 ? top6.map(c => c.campName.length > 24 ? c.campName.slice(0, 24) + '...' : c.campName) : ['Không có camp lời'];
+    const profits = top6.length > 0 ? top6.map(c => Math.round(c.profit)) : [0];
 
     chartInstances.topProfitable = new Chart(ctx, {
       type: 'bar',
@@ -992,10 +1008,36 @@
     if (parts.length === 3) {
       const d = parseInt(parts[0], 10);
       const m = parseInt(parts[1], 10) - 1;
-      const y = parseInt(parts[2], 10);
+      let y = parseInt(parts[2], 10);
+      if (y < 100) y += 2000;
       return new Date(y, m, d);
     }
     return null;
+  }
+
+  // Hỗ trợ parse ngày đa dạng: dd/mm/yyyy, dd-mm-yyyy hoặc yyyy-mm-dd
+  function parseFlexibleDate(str) {
+    if (!str) return null;
+    str = String(str).trim();
+
+    // Định dạng yyyy-mm-dd
+    if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(str)) {
+      const p = str.split(/[-/]/);
+      return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+    }
+
+    // Định dạng dd/mm/yyyy hoặc dd-mm-yyyy
+    if (/^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}$/.test(str)) {
+      const p = str.split(/[-/]/);
+      const d = parseInt(p[0], 10);
+      const m = parseInt(p[1], 10) - 1;
+      let y = parseInt(p[2], 10);
+      if (y < 100) y += 2000;
+      return new Date(y, m, d);
+    }
+
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
   }
 
   function formatVnDate(date) {
@@ -1006,16 +1048,148 @@
     return `${d}/${m}/${y}`;
   }
 
-  function formatToInputDate(vnDateStr) {
-    if (!vnDateStr) return '';
-    const parts = String(vnDateStr).split('/');
-    if (parts.length === 3) {
-      const d = String(parts[0]).padStart(2, '0');
-      const m = String(parts[1]).padStart(2, '0');
-      const y = parts[2];
-      return `${y}-${m}-${d}`;
-    }
-    return '';
+  function formatToDisplayVnDate(dateStr) {
+    if (!dateStr) return '';
+    const parsed = parseFlexibleDate(dateStr);
+    return parsed ? formatVnDate(parsed) : String(dateStr);
+  }
+
+  function formatToInputDate(dateStr) {
+    if (!dateStr) return '';
+    const parsed = parseFlexibleDate(dateStr);
+    if (!parsed) return '';
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, '0');
+    const d = String(parsed.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  // Khởi tạo bộ lịch Popup nội bộ (Datepicker Popup)
+  function initCustomDatepickers() {
+    [elStartDateInput, elEndDateInput].forEach(input => {
+      if (!input) return;
+      const wrapper = input.closest('.datepicker-wrapper');
+      if (!wrapper) return;
+
+      let popup = null;
+      let viewYear = new Date().getFullYear();
+      let viewMonth = new Date().getMonth();
+
+      function openPicker() {
+        closeAllPickers();
+        const currentVal = parseFlexibleDate(input.value) || new Date();
+        viewYear = currentVal.getFullYear();
+        viewMonth = currentVal.getMonth();
+
+        popup = document.createElement('div');
+        popup.className = 'datepicker-popup';
+        wrapper.appendChild(popup);
+        renderCalendar();
+      }
+
+      function closePicker() {
+        if (popup) {
+          popup.remove();
+          popup = null;
+        }
+      }
+
+      function renderCalendar() {
+        if (!popup) return;
+        const monthNames = [
+          'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
+          'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
+          'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+        ];
+
+        const firstDay = new Date(viewYear, viewMonth, 1).getDay(); // 0 is Sunday
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+        const selectedDate = parseFlexibleDate(input.value);
+        const today = new Date();
+
+        let html = `
+          <div class="dp-header">
+            <button type="button" class="dp-nav-btn" id="dpPrev">‹</button>
+            <div class="dp-title">${monthNames[viewMonth]} / ${viewYear}</div>
+            <button type="button" class="dp-nav-btn" id="dpNext">›</button>
+          </div>
+          <div class="dp-weekdays">
+            <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span>
+          </div>
+          <div class="dp-days-grid">
+        `;
+
+        for (let i = 0; i < firstDay; i++) {
+          html += `<div class="dp-day-cell empty"></div>`;
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const isSelected = selectedDate &&
+            selectedDate.getDate() === day &&
+            selectedDate.getMonth() === viewMonth &&
+            selectedDate.getFullYear() === viewYear;
+
+          const isToday = today.getDate() === day &&
+            today.getMonth() === viewMonth &&
+            today.getFullYear() === viewYear;
+
+          let classes = 'dp-day-cell';
+          if (isSelected) classes += ' selected';
+          if (isToday) classes += ' today';
+
+          html += `<div class="${classes}" data-day="${day}">${day}</div>`;
+        }
+
+        html += `</div>`;
+        popup.innerHTML = html;
+
+        popup.querySelector('#dpPrev').addEventListener('click', (e) => {
+          e.stopPropagation();
+          viewMonth--;
+          if (viewMonth < 0) {
+            viewMonth = 11;
+            viewYear--;
+          }
+          renderCalendar();
+        });
+
+        popup.querySelector('#dpNext').addEventListener('click', (e) => {
+          e.stopPropagation();
+          viewMonth++;
+          if (viewMonth > 11) {
+            viewMonth = 0;
+            viewYear++;
+          }
+          renderCalendar();
+        });
+
+        popup.querySelectorAll('.dp-day-cell[data-day]').forEach(cell => {
+          cell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const d = parseInt(cell.getAttribute('data-day'), 10);
+            const chosenDate = new Date(viewYear, viewMonth, d);
+            input.value = formatVnDate(chosenDate);
+            closePicker();
+          });
+        });
+      }
+
+      input.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (popup) closePicker();
+        else openPicker();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (popup && !wrapper.contains(e.target)) {
+          closePicker();
+        }
+      });
+    });
+  }
+
+  function closeAllPickers() {
+    document.querySelectorAll('.datepicker-popup').forEach(p => p.remove());
   }
 
   // Khởi động khi DOM sẵn sàng

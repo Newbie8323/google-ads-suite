@@ -693,8 +693,11 @@ function processShopeeRows(rows) {
     else if (norm.includes('rankbonus')) keyMap.rankBonus = k;
     else if (norm.includes('orderid')) keyMap.orderId = k;
     else if (norm.includes('conversiontime')) keyMap.conversionTime = k;
+    else if (norm.includes('itemid')) keyMap.itemId = k;
     else if (norm === 'sub1') keyMap.sub1 = k;
     else if (norm === 'sub2') keyMap.sub2 = k;
+    else if (norm === 'sub3') keyMap.sub3 = k;
+    else if (norm === 'sub4') keyMap.sub4 = k;
     else if (norm.includes('clickid')) keyMap.clickId = k;
   });
 
@@ -707,9 +710,19 @@ function processShopeeRows(rows) {
     let campaignId = '';
     if (rawClickId.length >= 11) campaignId = rawClickId.substring(10).trim();
 
-    const sub1 = r[keyMap.sub1] || '';
-    const sub2 = r[keyMap.sub2] || '';
-    const trackingGclid = sub1.startsWith('Cj') ? (sub1 + (sub2 || '')) : (sub1 || rawClickId);
+    const sub1 = String(r[keyMap.sub1] || '').trim();
+    const sub2 = String(r[keyMap.sub2] || '').trim();
+    const sub3 = String(r[keyMap.sub3] || '').trim();
+    const sub4 = String(r[keyMap.sub4] || '').trim();
+    const rawItemId = String(r[keyMap.itemId] || '').replace(/[\t\r\n]/g, '').trim();
+
+    // Nối ghép thông minh chuỗi gclid đầy đủ từ Sub 1-4 nếu hệ thống tách nhỏ gclid
+    let trackingGclid = '';
+    if (sub1.startsWith('Cj') || sub1.startsWith('EAIaIQobChMI')) {
+      trackingGclid = sub1 + sub2 + sub3 + sub4;
+    } else {
+      trackingGclid = (sub1 + sub2) || rawClickId;
+    }
 
     const rawConv = String(r[keyMap.conversionTime] || '').replace(/[\t\r\n]/g, '').trim();
     const cleanOrderId = String(r[keyMap.orderId] || '').replace(/[\t\r\n]/g, '').trim();
@@ -717,6 +730,7 @@ function processShopeeRows(rows) {
     parsed.push({
       id: idx + 1,
       orderId: cleanOrderId,
+      itemId: rawItemId,
       productNameFull: rawName,
       categoryName: String(r[keyMap.category] || 'Chưa phân loại').replace(/[\t\r\n]/g, '').trim(),
       status: String(r[keyMap.status] || 'Pending').replace(/[\t\r\n]/g, '').trim(),

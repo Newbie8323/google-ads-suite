@@ -4,7 +4,23 @@
 // =========================================================================
 
 (function(global) {
-  // 1. Từ ngữ 18+ rõ ràng, đặc trưng tuyệt đối (Không bị trùng nghĩa đời sống)
+  // 1. Whitelist loại trừ theo ngữ cảnh (Context Exclusions)
+  // Chặn bắt nhầm: Nông nghiệp, thú y, cây trồng, hô hấp, phụ kiện công nghệ, đồ gia dụng
+  const EXCLUSION_PATTERNS = [
+    // Nông nghiệp, cây trồng, kích rễ, phân bón
+    "mangga", "tanaman", "cangkok", "padi", "stek", "akar", "pupuk", "buah mangga",
+    // Thú y, gia súc, động vật
+    "sapi betina", "obat birahi sapi", "birahi hewan", "ayam kampung", "bertelur", "dna burung",
+    // Bệnh lý hô hấp, ho, đờm cổ họng
+    "dahak", "tenggorokan", "batuk", "serak", "pengencer dahak",
+    // Bệnh y tế thông thường không phải chủ đề 18+
+    "psoriasis", "miom", "kista ovarium", "kista bartholin", "menstruasi", "tinea cruris", "anyang anyangan",
+    "bab campur lendir", "mengencerkan lendir", "herpes di wajah", "perontok bulu yang aman untuk ibu hamil",
+    // Đồ gia dụng, công nghệ (ốp lưng điện thoại...)
+    "oppo", "samsung", "iphone", "xiaomi", "casing", "bangku", "kursi"
+  ].map(k => k.toLowerCase().trim()).filter(Boolean);
+
+  // 2. Từ ngữ 18+ rõ ràng, đặc trưng tuyệt đối (Không bị trùng nghĩa đời sống)
   const STRICT_ADULT_KEYWORDS = [
     // BCS & Đồ chơi tình dục đặc hiệu
     "kondom", "durex", "sagami", "alat bantu sex", "alat bantu pria", 
@@ -30,19 +46,38 @@
     "porn", "pornography", "hentai", "erotic", "erotica", "orgasm", "masturbation", 
     "fetish", "blowjob", "hardcore sex", "adult movie", "onlyfans", "khieu dam", 
     "phim sex", "phim heo", "clip nong", "thu dam", "khoa than", "gai goi",
-    // Trang phục gợi cảm đặc hiệu
+    // Trang phục gợi cảm đặc hiệu & phòng the
     "lingerie", "lingeri", "g-string", "gstring", "baju tidur seksi", "baju seksi", 
     "baju dinas malam", "baju haram", "babydoll seksi", "bra terbuka", "open crotch", 
-    "crotchless", "sheer bra", "see through", "bodystocking"
+    "crotchless", "sheer bra", "see through", "bodystocking",
+    // Mở rộng bổ sung: Bộ phận sinh dục & tiếng lóng nhạy cảm Indo
+    "kontol", "mister p", "mrp", "joni", "oenis", "alat kelamin", "kemaluan",
+    "selangkangan", "bulu kemaluan", "kewanitaan", "vagi", "payudara",
+    // Sản phẩm bôi trơn tình dục & mát xa
+    "pelicin", "pelumas", "female lubricant", "edible oil massage", "personal lubricant", "ky jelly",
+    "massage oil for couples",
+    // Đồ chơi & thủ dâm nam/nữ
+    "alat bantu", "mainan pria", "alat kocok", "pengocok pria", "kocok pria", "coli", "minyak coli",
+    "stroker", "buttplug", "cincin getar", "ring getar", "manstrubasi",
+    // Trang phục & nội y gợi cảm
+    "baju dinas", "dinas malam", "baju tidur tipis", "thong", "g string", "cd g string", "underwear",
+    // Kích dục & trợ lực sinh lý
+    "afrodisiak", "gairah wanita", "libido wanita", "perangsang nafsu", "katup mani",
+    "tisu mejik", "super magic", "magicpower", "sutra dotted", "sutra hitam", "sutra warna hitam",
+    "fiesta extreme", "fiesta gel", "fiesta lubricant",
+    "vivo sensitif", "one super studs", "sagami original", "dr boyke", "laforta", "gentletality",
+    "relove intimate", "prostanol", "africa black ant", "jamu spider", "viex v", "miscella v", "zahira sauda",
+    "manjakani", "lacto v", "softex missy", "mister puss",
+    // Bệnh xã hội / STDs & phụ khoa nhạy cảm
+    "kondiloma", "podofilotoksin", "kutil kelamin", "papiloma", "klamidia", "herpes",
+    "keluar nanah", "penis bernanah", "keputihan", "rapet wangi", "gurahvagina",
+    // Thuốc tăng kích cỡ & quan hệ
+    "pembesar pria", "pembesar burung", "pembesar urat", "alat pemanjang p", "p oil",
+    "vaginal tightening", "berhubungan intim", "saat hb", "obat loyo", "pengaman buat wanita",
+    "sperma pria", "buah pinang muda"
   ];
 
-  // 2. Từ đa nghĩa: Chỉ kích hoạt 18+ khi đi kèm ngữ cảnh nhạy cảm
-  // Tránh bắt nhầm:
-  // - "sutra" (vải lụa - kain sutra)
-  // - "fiesta" (xe Ford Fiesta, xúc xích Fiesta)
-  // - "thong" (thông tin, thông thoáng)
-  // - "lendir" (đờm/chất nhờn thông thường y tế)
-  // - "lubricant" (dầu nhớt bôi trơn xe / máy móc công nghiệp)
+  // 3. Từ đa nghĩa: Chỉ kích hoạt 18+ khi đi kèm ngữ cảnh nhạy cảm
   const CONTEXT_ADULT_KEYWORDS = [
     "kondom sutra", "pelumas sutra", "sutra kondom",
     "kondom fiesta", "fiesta condom", "fiesta lubricant",
@@ -75,10 +110,24 @@
     return false;
   }
 
+  function hasExclusion(lowerText) {
+    for (let i = 0; i < EXCLUSION_PATTERNS.length; i++) {
+      if (lowerText.includes(EXCLUSION_PATTERNS[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   const ADULT_ENGINE = {
     detectTerm: function(term) {
       if (!term || typeof term !== 'string') return null;
       const lower = term.toLowerCase();
+
+      // Kiểm tra whitelist loại trừ trước
+      if (hasExclusion(lower)) {
+        return null;
+      }
 
       for (let i = 0; i < ALL_PATTERNS.length; i++) {
         const kw = ALL_PATTERNS[i];
@@ -92,6 +141,11 @@
     detectUrl: function(url) {
       if (!url || typeof url !== 'string') return null;
       const lower = url.toLowerCase();
+
+      // Kiểm tra whitelist loại trừ trước
+      if (hasExclusion(lower)) {
+        return null;
+      }
 
       for (let i = 0; i < ALL_PATTERNS.length; i++) {
         const kw = ALL_PATTERNS[i];

@@ -276,19 +276,31 @@ window.processFileEC = function(files) {
         }
         loadedCount++;
         if (loadedCount === files.length) {
-          // Khử trùng lặp theo Checkout ID / Order ID (Cột 4 hoặc 5 nếu có)
+          // Khử trùng lặp theo Checkout ID / Order ID (Cột 4 hoặc 5 nếu có) và chuẩn hóa làm sạch khoảng trắng / tab thừa
           const seenOrders = new Set();
           let duplicateCount = 0;
           const dedupedRows = [];
 
+          // Chuẩn hóa tiêu đề: trim và làm sạch tab
+          headerRow = headerRow.map(h => String(h || '').replace(/[\t\r\n]/g, '').trim());
+
+          // Tìm vị trí các cột Sub 1-4 nếu có để nhận diện gclid
+          const sub1Idx = headerRow.findIndex(h => /^sub\s*1$/i.test(h));
+          const sub2Idx = headerRow.findIndex(h => /^sub\s*2$/i.test(h));
+          const sub3Idx = headerRow.findIndex(h => /^sub\s*3$/i.test(h));
+          const sub4Idx = headerRow.findIndex(h => /^sub\s*4$/i.test(h));
+
           mergedRows.forEach(r => {
-            // Giả định orderId hoặc checkoutId ở cột 4 hoặc 5
-            const key = (r[5] || r[4] || r[0] || '').trim();
+            // Trim và làm sạch tab (\t), \r, \n trên từng ô
+            const cleanedRow = r.map(c => String(c !== undefined && c !== null ? c : '').replace(/[\t\r\n]/g, '').trim());
+
+            // Giả định orderId hoặc checkoutId ở cột 5 hoặc 4 hoặc 0
+            const key = (cleanedRow[5] || cleanedRow[4] || cleanedRow[0] || '').trim();
             if (key && seenOrders.has(key)) {
               duplicateCount++;
             } else {
               if (key) seenOrders.add(key);
-              dedupedRows.push(r);
+              dedupedRows.push(cleanedRow);
             }
           });
 

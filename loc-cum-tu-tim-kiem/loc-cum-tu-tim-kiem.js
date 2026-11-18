@@ -54,6 +54,24 @@ let stNegativeUrls = new Set(
     ? window.DEFAULT_STANDARD_NEGATIVE_URLS
     : []
 );
+
+// Khởi tạo tập quy tắc mẫu phủ định URL contains (URL chứa)
+let stNegativePatterns = new Set(
+  (typeof window !== 'undefined' && Array.isArray(window.DEFAULT_STANDARD_NEGATIVE_PATTERNS))
+    ? window.DEFAULT_STANDARD_NEGATIVE_PATTERNS
+    : []
+);
+
+// Hàm kiểm tra một URL có bị loại trừ bởi URL bằng HOẶC URL chứa hay không
+function isUrlGloballyExcluded(url) {
+  if (!url) return false;
+  if (stNegativeUrls.has(url)) return true;
+  for (const pat of stNegativePatterns) {
+    if (pat && url.includes(pat)) return true;
+  }
+  return false;
+}
+
 try {
   const savedUrls = localStorage.getItem('google_ads_saved_neg_urls');
   if (savedUrls) {
@@ -62,11 +80,19 @@ try {
       list.forEach(u => stNegativeUrls.add(u));
     }
   }
+  const savedPatterns = localStorage.getItem('google_ads_saved_neg_patterns');
+  if (savedPatterns) {
+    const pList = JSON.parse(savedPatterns);
+    if (Array.isArray(pList)) {
+      pList.forEach(p => stNegativePatterns.add(p));
+    }
+  }
 } catch (e) {}
 
 function saveNegativeUrlsState() {
   try {
     localStorage.setItem('google_ads_saved_neg_urls', JSON.stringify(Array.from(stNegativeUrls)));
+    localStorage.setItem('google_ads_saved_neg_patterns', JSON.stringify(Array.from(stNegativePatterns)));
   } catch (e) {}
 }
 let ngramSelectedWords = new Set();
@@ -1636,9 +1662,9 @@ function renderUrlDiscoveryTab(data) {
     pathList = pathList.filter(p => p.urlType === categoryFilter);
   }
   if (exclFilter === 'ACTIVE') {
-    pathList = pathList.filter(p => !stNegativeUrls.has(p.prefix));
+    pathList = pathList.filter(p => !isUrlGloballyExcluded(p.prefix));
   } else if (exclFilter === 'EXCLUDED') {
-    pathList = pathList.filter(p => stNegativeUrls.has(p.prefix));
+    pathList = pathList.filter(p => isUrlGloballyExcluded(p.prefix));
   }
 
   // Update table header sorting indicators
@@ -1693,7 +1719,7 @@ function renderUrlDiscoveryTab(data) {
   let rowsHtml = '';
   pageItems.forEach(p => {
     const ctr = p.imp > 0 ? ((p.clicks / p.imp) * 100).toFixed(2) + '%' : '0.00%';
-    const isExcluded = stNegativeUrls.has(p.prefix);
+    const isExcluded = isUrlGloballyExcluded(p.prefix);
     let actionBadge = '';
 
     if (urlViewMode === 'structure') {
@@ -1751,10 +1777,17 @@ function renderUrlDiscoveryTab(data) {
       `;
     }
 
+    let displayPrefix = p.prefix;
+    try {
+      if (displayPrefix && displayPrefix.includes('%')) {
+        displayPrefix = decodeURIComponent(displayPrefix);
+      }
+    } catch (e) {}
+
     if (urlViewMode === 'structure') {
       urlCellContent = `
         <div class="font-semibold font-mono text-xs" style="color: #60a5fa; word-break: break-all;">
-          ${escapeHtml(p.prefix)}
+          ${escapeHtml(displayPrefix)}
         </div>
         ${headlineHtml}
         <div class="text-xs text-muted" style="margin-top: 4px;">
@@ -1764,7 +1797,7 @@ function renderUrlDiscoveryTab(data) {
     } else {
       urlCellContent = `
         <div class="font-semibold font-mono text-xs" style="word-break: break-all;">
-          ${escapeHtml(p.prefix)}
+          ${escapeHtml(displayPrefix)}
         </div>
         ${headlineHtml}
       `;
@@ -1975,12 +2008,13 @@ window.handleNegativeCsvUpload = function(event) {
       const line = rawLine.trim();
       if (!line) return;
 
-      // Tìm chuỗi "URL bằng <link>"
+      // Tìm chuỗi "URL bằng <link>" hoặc "URL chứa <pattern>"
       const matchEquals = line.match(/URL\s+b[ằa]ng\s+(https?:\/\/[^\s,"]+)/i);
+      const matchContains = line.match(/URL\s+ch[ứu]a\s+([^\s,"]+)/i);
       if (matchEquals && matchEquals[1]) {
         extractedUrls.push(matchEquals[1].trim());
-      } else if (/URL\s+ch[ứu]a/i.test(line)) {
-        skippedContainsCount++;
+      } else if (matchContains && matchContains[1]) {
+        extractedUrls.push('URL chứa ' + matchContains[1].trim());
       } else if (/^https?:\/\//i.test(line)) {
         // Link thuần tuý nếu user có file txt/csv chỉ có url
         const cleanUrl = line.split(/[,;\t]/)[0].replace(/^["']|["']$/g, '').trim();
@@ -1989,7 +2023,7 @@ window.handleNegativeCsvUpload = function(event) {
     });
 
     if (extractedUrls.length === 0) {
-      if (statusEl) statusEl.innerHTML = `<span style="color: #ef4444;">⚠️ Không tìm thấy URL dạng "URL bằng" trong file!</span>`;
+      if (statusEl) statusEl.innerHTML = `<span style="color: #ef4444;">⚠️ Không tìm thấy URL dạng "URL bằng" hoặc "URL chứa" trong file!</span>`;
       return;
     }
 
@@ -2001,13 +2035,13 @@ window.handleNegativeCsvUpload = function(event) {
     }
 
     if (statusEl) {
-      statusEl.innerHTML = `<span style="color: #10b981;">✓ Đã trích xuất <b>${extractedUrls.length}</b> link chính xác (bỏ qua ${skippedContainsCount} quy tắc "chứa")</span>`;
+      statusEl.innerHTML = `<span style="color: #10b981;">✓ Đã trích xuất <b>${extractedUrls.length}</b> quy tắc URL (gồm cả URL bằng & URL chứa)</span>`;
     }
     const countInfo = document.getElementById('txtImportUrlCountInfo');
     if (countInfo) {
-      countInfo.innerText = `Đã chuẩn bị ${setAll.size} URL`;
+      countInfo.innerText = `Đã chuẩn bị ${setAll.size} quy tắc URL`;
     }
-    showToast(`✅ Đã trích xuất ${extractedUrls.length} URL chính xác từ file báo cáo!`);
+    showToast(`✅ Đã trích xuất ${extractedUrls.length} quy tắc URL từ file báo cáo!`);
   };
 
   reader.onerror = function() {
@@ -2028,9 +2062,16 @@ window.submitImportNegativeUrls = function() {
     return;
   }
   let addedCount = 0;
+  let addedPatternCount = 0;
   lines.forEach(u => {
-    // Chỉ lấy URL dạng bằng, bỏ qua nếu là quy tắc chứa
     if (/URL\s+ch[ứu]a/i.test(u) || /^EXCLUDE\s+URL\s+contains/i.test(u)) {
+      let patternClean = u.replace(/^(URL\s+ch[ứu]a\s+)/i, '')
+                          .replace(/^(EXCLUDE\s+URL\s+contains\s+)/i, '')
+                          .trim();
+      if (patternClean && !stNegativePatterns.has(patternClean)) {
+        stNegativePatterns.add(patternClean);
+        addedPatternCount++;
+      }
       return;
     }
     let clean = u.replace(/^(URL\s+b[ằa]ng\s+)/i, '')
@@ -2046,7 +2087,7 @@ window.submitImportNegativeUrls = function() {
   closeImportNegativeUrlsModal();
   renderUrlDiscoveryTab(getFilteredSearchTerms());
   renderNegativesManagerTab();
-  showToast(`✅ Đã nhập thành công ${addedCount} URL loại trừ chính xác!`);
+  showToast(`✅ Đã nhập thành công ${addedCount} URL bằng & ${addedPatternCount} URL chứa!`);
 };
 
 // Generate recommended DSA rules dynamically
