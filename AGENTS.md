@@ -1,47 +1,39 @@
-# AGENT RULES & OPERATIONAL PRINCIPLES
+# AGENT RULES & OPERATIONAL PRINCIPLES (AdsInsight Pro)
 
-> Mọi hành động phải tuân thủ nghiêm ngặt các quy tắc dưới đây nhằm tối ưu token, tốc độ, đảm bảo tính bảo mật dữ liệu và kiến trúc mã nguồn chuẩn (Zero Hallucination & Zero Secret Leakage).
-
----
-
-### 1. Tối Ưu Token Nhưng Đảm Bảo Đủ Ngữ Cảnh (Context Integrity)
-- **Giao tiếp:** Trả lời trực diện, đúng trọng tâm, không văn mẫu.
-- **Đọc file thông minh:** Khi sửa hàm, đọc khối dòng cần thiết kèm ngữ cảnh xung quanh (biến, tham số liên quan). Nếu logic phụ thuộc biến ngoài, **phải tra cứu chính xác, cấm đoán mò**.
-- **Chống ảo giác (No Hallucination):** Mọi số liệu, tên biến, cấu trúc cột phải lấy từ code/file thực tế. Tuyệt đối không tự suy diễn hoặc bịa số liệu.
-- **Phạm vi sửa:** Tác động đúng hàm/khối yêu cầu; không sửa lan man ngoài phạm vi.
-
-### 2. Thao Tác Mã Nguồn Chuẩn Xác (Code Safety)
-- **Target độc nhất:** Chuỗi target edit bắt buộc kèm 3-5 dòng ngữ cảnh xung quanh; cấm dùng target ngắn/phổ biến (`} else {`, `return;`).
-- **An toàn Shell:** Không chạy inline shell chèn `${...}` hoặc backtick để tránh nuốt biến nội dung; ưu tiên dùng trực tiếp tool file.
-- **Kiểm tra tức thì:** Luôn chạy `node -c <file>` ngay sau khi sửa file JS lõi để chặn lỗi cú pháp.
-
-### 3. Tuyệt Đối Bảo Mật Dữ Liệu Cá Nhân (Zero Credential Leakage)
-- **Cấm ghi cứng (No Hardcoded Secrets):** Tuyệt đối KHÔNG ĐƯỢC chèn trực tiếp Spreadsheet ID cá nhân, Webhook URL, API Token, Private Key vào bất kỳ file nào được theo dõi bởi Git (ví dụ: `theo-doi-loi-nhuan.js`, `index.html`...).
-- **Cơ chế nạp bí mật:** Toàn bộ thông tin nhạy cảm bắt buộc phải gọi qua namespace nội bộ `window.ADS_LOCAL_SECRETS` (nằm trong file được `.gitignore` bảo vệ là `shared/js/config.local.js`).
-- **Kiểm tra trước khi Commit/Push:** Luôn chạy `git diff` rà soát cẩn thận trước khi tạo commit; đảm bảo biến mặc định trên Git luôn là chuỗi rỗng `""`.
-
-### 4. Kiến Trúc Mã Nguồn & Tái Sử Dụng (Deep Modules & DRY)
-- **Giao diện dùng chung:** Không copy-paste HTML cấu trúc Sidebar / Header giữa các trang. Luôn sử dụng component tập trung [`shared/js/layout.js`](file:///e:/Project/Google%20Ads/shared/js/layout.js).
-- **Hàm tiện ích tập trung:** Các hàm dùng chung (`showToast`, `escapeHtml`, `formatCurrency`, `formatNumber`, `copyToClipboard`) bắt buộc gọi qua [`shared/js/utils.js`](file:///e:/Project/Google%20Ads/shared/js/utils.js). Cấm viết lại cục bộ gây ô nhiễm namespace toàn cục (`window`).
-- **Hiệu năng nền (Non-blocking UI):** Các tác vụ xử lý file nặng (như bóc tách N-Gram, phân tích dữ liệu hàng chục nghìn dòng) phải ưu tiên đẩy vào Web Worker ngầm (`ngram-worker.js`), không chạy vòng lặp chặn Main Thread làm lag trình duyệt.
-
-### 5. Tiếp Nhận Dữ Liệu Tinh Gọn (Data Handling)
-- Đọc đủ dòng đầu để nắm chính xác toàn bộ cấu trúc cột và kiểu dữ liệu trước khi code.
-- Triển khai logic phân loại ngay; không chạy script thống kê ngữ nghĩa thừa thãi nếu không được yêu cầu.
-
-### 6. Báo Lỗi Ngay - Không Chạy Cố (Fail Fast)
-- Thất bại 1 lần = **Dừng ngay lập tức**.
-- Cấm tự chạy lặp lệnh để mò mẫm; báo đúng vị trí, nguyên nhân và đợi chỉ đạo để tiết kiệm token và thời gian.
+> Nghiêm ngặt tuân thủ: Tiết kiệm token, Zero Hallucination, Zero Secret Leakage, Deep Modules.
 
 ---
 
-### 7. Quy Trình Bắt Buộc Trước Khi Sửa Code (Strict Pre-flight Protocol)
-- **Quy tắc Zero-Action khi thiếu dữ liệu:** Khi người dùng báo lỗi giao diện/runtime mà chưa kèm:
-  1. Tên file/dữ liệu thực tế đang thao tác.
-  2. Thông báo lỗi cụ thể hoặc log đỏ trong F12 Console.
-  -> **HÀNH ĐỘNG DUY NHẤT ĐƯỢC PHÉP:** Đặt câu hỏi yêu cầu cung cấp đúng thông tin đó. **CẤM TUYỆT ĐỐI** tự suy diễn file trong workspace rồi âm thầm sửa code đón đầu.
-- **Hoàn tác trước (Rollback First):** Nếu đã sửa code dựa trên suy đoán sai, phải hoàn tác code về trạng thái ổn định trước đó trước khi xử lý tiếp.
-- **Quy trình 3 bước xử lý lỗi:**
-  1. *Bước 1 - Thu thập chứng cứ thực tế:* Xác minh chính xác file, cấu trúc dữ liệu thực tế và log lỗi.
-  2. *Bước 2 - Phân tích nguyên nhân:* Trình bày rõ tại sao lỗi xảy ra (chưa sửa code).
-  3. *Bước 3 - Xác nhận chỉ đạo:* Chỉ sửa code khi người dùng đồng ý với phương án.
+### 1. Kỷ Luật Thao Tác Mã Nguồn (Code Safety & Syntax)
+- **Target chuẩn xác:** Chuỗi target edit bắt buộc kèm 3-5 dòng ngữ cảnh bao quanh; cấm dùng target ngắn (`} else {`).
+- **An toàn Shell:** Ưu tiên tool file; không chạy inline shell chèn `${...}` / backtick tránh nuốt biến. Môi trường: Windows PowerShell (UTF-8).
+- **Kiểm tra tức thì:** Luôn chạy `node -c <file>` ngay sau khi sửa JS lõi.
+- **Git Commit:** Đặt tên theo chuẩn Conventional Commits (`fix:`, `feat:`, `refactor:`, `style:`).
+
+### 2. Tuyệt Đối Bảo Mật (Zero Secret Leakage)
+- **Cấm hardcode secrets:** CẤM ghi Spreadsheet ID, Webhook, API Token, Private Key vào file Git track.
+- **Nạp bí mật:** 100% thông tin nhạy cảm gọi qua `window.ADS_LOCAL_SECRETS` (từ `shared/js/config.local.js` trong `.gitignore`).
+- **Soát commit:** Luôn chạy `git diff` trước khi commit; biến mặc định trên Git luôn là chuỗi rỗng `""`.
+
+### 3. Kiến Trúc & Tái Sử Dụng (Deep Modules & DRY)
+- **Layout tập trung:** Không copy-paste HTML Sidebar/Header. Luôn dùng [`shared/js/layout.js`](file:///e:/DevSpace/Main_Projects/Google%20Ads/shared/js/layout.js).
+- **Utils dùng chung:** Hàm `showToast`, `escapeHtml`, `formatCurrency`, `formatNumber`, `copyToClipboard` bắt buộc gọi qua [`shared/js/utils.js`](file:///e:/DevSpace/Main_Projects/Google%20Ads/shared/js/utils.js). Cấm viết cục bộ làm ô nhiễm `window`.
+- **Non-blocking UI:** Xử lý file nặng (N-Gram, bóc tách dữ liệu lớn) bắt buộc dùng Web Worker (`ngram-worker.js`).
+
+### 4. Quy Trình Tiếp Nhận & Sửa Lỗi (Fast-track vs Strict Protocol)
+- **Fast-track (Làm ngay):** Yêu cầu đổi style CSS, đổi màu/icon, sửa text label, bổ sung từ điển rõ ràng -> Sửa trực tiếp, test cú pháp và báo kết quả.
+- **Strict Protocol (Bắt buộc 3 bước khi lỗi runtime / tính toán số liệu):**
+  1. *Thiếu chứng cứ:* Nếu chưa có file cụ thể hoặc log F12 -> **Hỏi ngay, cấm đoán mò sửa đón đầu**.
+  2. *Phân tích trước:* Trình bày rõ nguyên nhân gốc rễ (Root Cause) trước khi sửa.
+  3. *Xác nhận:* Chỉ sửa code khi người dùng đồng ý với phương án.
+
+### 5. Tra Cứu Tri Thức Ngoài (`E:\DevSpace\Repo Github\`)
+> **Chỉ mục tổng:** [`E:\DevSpace\Repo Github\REPOS_REGISTRY.json`](file:///E:/DevSpace/Repo%20Github/REPOS_REGISTRY.json). Tuyệt đối **KHÔNG copy repo vào dự án**, đọc trực tiếp theo đường dẫn:
+
+| Mục tiêu | Repo gốc (`E:\DevSpace\Repo Github\`) | File khóa cần đọc |
+| :--- | :--- | :--- |
+| **Logic, Debug, TDD** | [`mattpocock-skills`](file:///E:/DevSpace/Repo%20Github/mattpocock-skills) | `skills/engineering/codebase-design/SKILL.md`, `diagnosing-bugs/SKILL.md` |
+| **UI/UX & Data Table** | [`ui-ux-repo`](file:///E:/DevSpace/Repo%20Github/ui-ux-repo) | `REPO_OVERVIEW.md`, `skill/SKILL.md` |
+| **Anti-AI Slop & Theme** | [`hallmark`](file:///E:/DevSpace/Repo%20Github/hallmark) & [`impeccable-repo`](file:///E:/DevSpace/Repo%20Github/impeccable-repo) | `hallmark/REPO_OVERVIEW.md`, `skills/hallmark/SKILL.md` |
+| **Kiểm toán Bảo mật** | [`security-audit-skill`](file:///E:/DevSpace/Repo%20Github/security-audit-skill) | `skills/security-audit/SKILL.md`, `VALIDATION-AND-REPORTING.md` |
+| **Video Ads & Content** | [`OpenMontage`](file:///E:/DevSpace/Repo%20Github/OpenMontage) & [`humanizer`](file:///E:/DevSpace/Repo%20Github/humanizer) | `OpenMontage/REPO_OVERVIEW.md`, `humanizer/SKILL.md` |

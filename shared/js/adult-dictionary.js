@@ -5,17 +5,22 @@
 
 (function(global) {
   // 1. Whitelist loại trừ theo ngữ cảnh (Context Exclusions)
-  // Chặn bắt nhầm: Nông nghiệp, thú y, cây trồng, hô hấp, phụ kiện công nghệ, đồ gia dụng
+  // Chặn bắt nhầm: Nông nghiệp, thú y, cây trồng, hô hấp, phụ kiện công nghệ, đồ gia dụng, thiết bị y tế
   const EXCLUSION_PATTERNS = [
     // Nông nghiệp, cây trồng, kích rễ, phân bón
     "mangga", "tanaman", "cangkok", "padi", "stek", "akar", "pupuk", "buah mangga",
-    // Thú y, gia súc, động vật
+    // Thú y, gia súc, động vật nuôi
     "sapi betina", "obat birahi sapi", "birahi hewan", "ayam kampung", "bertelur", "dna burung",
+    "babi", "kucing", "anjing", "hewan", "ternak", "kambing", "kelinci", "hamster", "unggas",
     // Bệnh lý hô hấp, ho, đờm cổ họng
     "dahak", "tenggorokan", "batuk", "serak", "pengencer dahak",
+    // Thiết bị y tế & hỗ trợ sinh hoạt đời sống
+    "alat bantu jalan", "alat bantu dengar", "alat bantu pernapasan", "alat bantu napas",
+    "kursi roda", "walker", "tongkat jalan", "fisioterapi",
     // Bệnh y tế thông thường không phải chủ đề 18+
     "psoriasis", "miom", "kista ovarium", "kista bartholin", "menstruasi", "tinea cruris", "anyang anyangan",
     "bab campur lendir", "mengencerkan lendir", "herpes di wajah", "perontok bulu yang aman untuk ibu hamil",
+    "papiloma di leher", "papiloma leher", "papiloma wajah", "papiloma di wajah",
     // Đồ gia dụng, công nghệ (ốp lưng điện thoại...)
     "oppo", "samsung", "iphone", "xiaomi", "casing", "bangku", "kursi"
   ].map(k => k.toLowerCase().trim()).filter(Boolean);
@@ -57,7 +62,7 @@
     "pelicin", "pelumas", "female lubricant", "edible oil massage", "personal lubricant", "ky jelly",
     "massage oil for couples",
     // Đồ chơi & thủ dâm nam/nữ
-    "alat bantu", "mainan pria", "alat kocok", "pengocok pria", "kocok pria", "coli", "minyak coli",
+    "mainan pria", "alat kocok", "pengocok pria", "kocok pria", "coli", "minyak coli",
     "stroker", "buttplug", "cincin getar", "ring getar", "manstrubasi",
     // Trang phục & nội y gợi cảm
     "baju dinas", "dinas malam", "baju tidur tipis", "thong", "g string", "cd g string", "underwear",
