@@ -56,7 +56,7 @@
     "baju dinas malam", "baju haram", "babydoll seksi", "bra terbuka", "open crotch", 
     "crotchless", "sheer bra", "see through", "bodystocking",
     // Mở rộng bổ sung: Bộ phận sinh dục & tiếng lóng nhạy cảm Indo
-    "kontol", "mister p", "mrp", "joni", "oenis", "alat kelamin", "kemaluan",
+    "kontol", "mister p", "mrp", "oenis", "alat kelamin", "kemaluan",
     "selangkangan", "bulu kemaluan", "kewanitaan", "vagi", "payudara",
     // Sản phẩm bôi trơn tình dục & mát xa
     "pelicin", "pelumas", "female lubricant", "edible oil massage", "personal lubricant", "ky jelly",
