@@ -34,6 +34,14 @@
   let ctrMap = {}; // Lưu CTR tính toán theo campId
   let dailyStatsMap = {}; // Lưu stats tổng hợp theo khoảng ngày tùy chọn
   let dailyOrdersMap = {}; // Lưu doanh thu và số đơn theo ngày của từng campId
+  let rawSheetsCache = {
+    jsonTongHop: null,
+    jsonMO: null,
+    jsonEC: null,
+    jsonAP: null,
+    cachedAt: 0
+  };
+  const CACHE_TTL_MS = 5 * 60 * 1000; // Cache 5 phút cho các sheet raw lớn
   let chartInstances = {}; // Lưu các instance của Chart.js
 
   // DOM Elements
@@ -46,6 +54,7 @@
   const elStartDateInput = document.getElementById('startDateInput');
   const elEndDateInput = document.getElementById('endDateInput');
   const elBtnApplyDateFilter = document.getElementById('btnApplyDateFilter');
+  const elBtnResetDateFilter = document.getElementById('btnResetDateFilter');
   const elLagStatusNotice = document.getElementById('lagStatusNotice');
   const elBtnSync = document.getElementById('btnSync');
   const elSyncSpinner = document.getElementById('syncSpinner');
@@ -99,10 +108,24 @@
     // Khởi tạo Custom Datepicker Popup chuẩn dd/mm/yyyy
     initCustomDatepickers();
 
+    // Nút Đồng bộ thủ công
+    if (elBtnSync) {
+      elBtnSync.addEventListener('click', () => {
+        syncData(currentTabKey, true); // forceRefresh = true khi bấm nút đồng bộ
+      });
+    }
+
     // Nút Lọc Ngày Tùy Chọn
     if (elBtnApplyDateFilter) {
       elBtnApplyDateFilter.addEventListener('click', () => {
         applyCustomDateFilter();
+      });
+    }
+
+    // Nút Đặt lại Bộ lọc Ngày về chu kỳ mặc định
+    if (elBtnResetDateFilter) {
+      elBtnResetDateFilter.addEventListener('click', () => {
+        resetDateFilter();
       });
     }
     if (elAccountFilter) {
@@ -183,8 +206,8 @@
     });
   }
 
-  // Đồng bộ dữ liệu từ Google Sheets
-  async function syncData(tabKey) {
+  // Đồng bộ dữ liệu từ Google Sheets (hỗ trợ cache cho 4 bảng dữ liệu thô lớn)
+  async function syncData(tabKey, forceRefresh = false) {
     const tab = TABS_CONFIG[tabKey];
     if (!tab) return;
 
@@ -196,14 +219,39 @@
     const urlRawAP = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${GID_RAW_AP}&t=${Date.now()}`;
 
     try {
-      // Tải song song Dashboard, Data_TongHop và các bảng đơn hàng sàn (MO, EC, AP)
-      const [jsonDashboard, jsonTongHop, jsonMO, jsonEC, jsonAP] = await Promise.all([
-        fetchSheetJsonp(urlDashboard),
-        fetchSheetJsonp(urlTongHop).catch(() => null),
-        fetchSheetJsonp(urlRawMO).catch(() => null),
-        fetchSheetJsonp(urlRawEC).catch(() => null),
-        fetchSheetJsonp(urlRawAP).catch(() => null)
-      ]);
+      const nowTs = Date.now();
+      const isCacheValid = !forceRefresh && rawSheetsCache.jsonTongHop && (nowTs - rawSheetsCache.cachedAt < CACHE_TTL_MS);
+
+      let jsonDashboard, jsonTongHop, jsonMO, jsonEC, jsonAP;
+
+      if (isCacheValid) {
+        // Tái sử dụng cache dữ liệu thô, chỉ tải Dashboard của chu kỳ
+        jsonDashboard = await fetchSheetJsonp(urlDashboard);
+        jsonTongHop = rawSheetsCache.jsonTongHop;
+        jsonMO = rawSheetsCache.jsonMO;
+        jsonEC = rawSheetsCache.jsonEC;
+        jsonAP = rawSheetsCache.jsonAP;
+      } else {
+        // Tải song song Dashboard, Data_TongHop và các bảng đơn hàng sàn (MO, EC, AP)
+        [jsonDashboard, jsonTongHop, jsonMO, jsonEC, jsonAP] = await Promise.all([
+          fetchSheetJsonp(urlDashboard),
+          fetchSheetJsonp(urlTongHop).catch(() => null),
+          fetchSheetJsonp(urlRawMO).catch(() => null),
+          fetchSheetJsonp(urlRawEC).catch(() => null),
+          fetchSheetJsonp(urlRawAP).catch(() => null)
+        ]);
+
+        // Cập nhật bộ nhớ đệm
+        if (jsonTongHop) {
+          rawSheetsCache = {
+            jsonTongHop,
+            jsonMO,
+            jsonEC,
+            jsonAP,
+            cachedAt: nowTs
+          };
+        }
+      }
 
       if (!jsonDashboard || !jsonDashboard.table) {
         throw new Error('Dữ liệu Google Sheets trả về không đúng định dạng bảng.');
@@ -218,6 +266,11 @@
       parseSheetData(jsonDashboard);
       populateAccountFilter();
       applyFilters();
+
+      // Ẩn nút Reset Date Filter khi nạp lại chu kỳ
+      if (elBtnResetDateFilter) {
+        elBtnResetDateFilter.style.display = 'none';
+      }
 
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
@@ -590,6 +643,10 @@
       elLagStatusNotice.style.color = '#34d399';
     }
 
+    if (elBtnResetDateFilter) {
+      elBtnResetDateFilter.style.display = 'inline-flex';
+    }
+
     // Tính toán lại Chi phí, Doanh thu, Clicks, CTR theo khoảng ngày đã chọn
     let hasDailyMatch = false;
     rawCampaigns.forEach(c => {
@@ -663,6 +720,67 @@
     });
 
     applyFilters();
+
+    if (typeof showToast === 'function') {
+      showToast(`Đã lọc từ ${formatVnDate(startDate)} đến ${formatVnDate(endDate)}!`);
+    }
+  }
+
+  // Khôi phục lại bộ lọc ngày về chu kỳ gốc
+  function resetDateFilter() {
+    rawCampaigns.forEach(c => {
+      c.cost = c.originalCost !== undefined ? c.originalCost : c.cost;
+      c.revenue = c.originalRevenue !== undefined ? c.originalRevenue : c.revenue;
+      c.clicks = c.originalClicks !== undefined ? c.originalClicks : c.clicks;
+      c.conv = c.originalConv !== undefined ? c.originalConv : c.conv;
+      c.ctr = c.originalCtr !== undefined ? c.originalCtr : c.ctr;
+      c.cpc = c.clicks > 0 ? (c.cost / c.clicks) : 0;
+      c.profit = c.revenue - c.cost;
+      c.roas = c.cost > 0 ? (c.revenue / c.cost) : (c.revenue > 0 ? 99 : 0);
+      c.cr = c.clicks > 0 ? (c.conv / c.clicks) : 0;
+
+      if (c.profit > 0 && c.roas >= 2) c.statusType = 'scaling';
+      else if (c.profit > 0) c.statusType = 'profitable';
+      else if (c.profit < 0) c.statusType = 'losing';
+      else c.statusType = 'normal';
+    });
+
+    // Reset lại ngày trên 2 ô input về ngày mặc định của chu kỳ
+    if (periodMeta.from && periodMeta.to) {
+      if (elStartDateInput) elStartDateInput.value = formatToDisplayVnDate(periodMeta.from);
+      if (elEndDateInput) elEndDateInput.value = formatToDisplayVnDate(periodMeta.to);
+
+      const displayRange = `${formatToDisplayVnDate(periodMeta.from)} → ${formatToDisplayVnDate(periodMeta.to)}`;
+      if (elPeriodBadgeText) {
+        elPeriodBadgeText.textContent = displayRange;
+      }
+      if (elHeaderPeriodText) {
+        elHeaderPeriodText.textContent = displayRange;
+      }
+      if (elPeriodBadge) {
+        elPeriodBadge.style.display = 'inline-flex';
+      }
+    } else {
+      if (elPeriodBadge) elPeriodBadge.style.display = 'none';
+      if (elHeaderPeriodText) {
+        const tabName = TABS_CONFIG[currentTabKey]?.name || 'Mặc định';
+        elHeaderPeriodText.textContent = tabName;
+      }
+    }
+
+    if (elLagStatusNotice) {
+      elLagStatusNotice.innerHTML = '';
+    }
+
+    if (elBtnResetDateFilter) {
+      elBtnResetDateFilter.style.display = 'none';
+    }
+
+    applyFilters();
+
+    if (typeof showToast === 'function') {
+      showToast('Đã đặt lại bộ lọc ngày về chu kỳ mặc định!');
+    }
   }
 
   function applyFilters() {

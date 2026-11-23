@@ -782,12 +782,19 @@
             </div>
           </div>
 
-          <div style="align-self: flex-end; margin-bottom: 2px;">
+          <div style="align-self: flex-end; margin-bottom: 2px; display: flex; gap: 8px;">
             <button type="button" class="btn-sync-glow" id="btnApplyDateFilter" style="padding: 9px 14px; font-size: 12px; background: linear-gradient(135deg, #059669, #10b981);">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
               <span>Lọc Ngày</span>
+            </button>
+            <button type="button" class="btn-sync-glow" id="btnResetDateFilter" title="Đặt lại bộ lọc ngày về chu kỳ mặc định" style="padding: 9px 12px; font-size: 12px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #cbd5e1; display: none;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              <span>Đặt lại</span>
             </button>
           </div>
 
