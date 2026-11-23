@@ -11,7 +11,10 @@
   const SPREADSHEET_ID = (typeof window !== 'undefined' && window.ADS_LOCAL_SECRETS && window.ADS_LOCAL_SECRETS.SPREADSHEET_ID)
     ? window.ADS_LOCAL_SECRETS.SPREADSHEET_ID
     : "";
-  const GID_DATA_TONGHOP = '1901670114'; // Chứa dữ liệu CTR theo từng ngày của các camp
+  const GID_DATA_TONGHOP = '1901670114'; // Chứa dữ liệu CTR theo từng ngày của các camp (Raw_gg_detail)
+  const GID_RAW_MO = '780943603'; // Dữ liệu đơn hàng & hoa hồng Masoffer
+  const GID_RAW_EC = '1821183995'; // Dữ liệu đơn hàng & hoa hồng Ecomobi
+  const GID_RAW_AP = '958780946'; // Dữ liệu đơn hàng & hoa hồng Adpia
 
   const TABS_CONFIG = {
     'thang11': { name: 'Tháng 11 (Mới nhất)', gid: '584036190' },
@@ -30,6 +33,7 @@
   let currentSort = { col: 'profit', dir: 'desc' }; // default sort by profit descending
   let ctrMap = {}; // Lưu CTR tính toán theo campId
   let dailyStatsMap = {}; // Lưu stats tổng hợp theo khoảng ngày tùy chọn
+  let dailyOrdersMap = {}; // Lưu doanh thu và số đơn theo ngày của từng campId
   let chartInstances = {}; // Lưu các instance của Chart.js
 
   // DOM Elements
@@ -187,20 +191,29 @@
     setLoading(true);
     const urlDashboard = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${tab.gid}&t=${Date.now()}`;
     const urlTongHop = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${GID_DATA_TONGHOP}&t=${Date.now()}`;
+    const urlRawMO = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${GID_RAW_MO}&t=${Date.now()}`;
+    const urlRawEC = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${GID_RAW_EC}&t=${Date.now()}`;
+    const urlRawAP = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?gid=${GID_RAW_AP}&t=${Date.now()}`;
 
     try {
-      // Tải song song cả Dashboard lẫn Data_TongHop để lấy CTR chính xác
-      const [jsonDashboard, jsonTongHop] = await Promise.all([
+      // Tải song song Dashboard, Data_TongHop và các bảng đơn hàng sàn (MO, EC, AP)
+      const [jsonDashboard, jsonTongHop, jsonMO, jsonEC, jsonAP] = await Promise.all([
         fetchSheetJsonp(urlDashboard),
-        fetchSheetJsonp(urlTongHop).catch(() => null) // Nếu lỗi vẫn không chặn bảng chính
+        fetchSheetJsonp(urlTongHop).catch(() => null),
+        fetchSheetJsonp(urlRawMO).catch(() => null),
+        fetchSheetJsonp(urlRawEC).catch(() => null),
+        fetchSheetJsonp(urlRawAP).catch(() => null)
       ]);
 
       if (!jsonDashboard || !jsonDashboard.table) {
         throw new Error('Dữ liệu Google Sheets trả về không đúng định dạng bảng.');
       }
 
-      // Parse CTR map và dữ liệu theo ngày từ Data_TongHop
+      // Parse CTR map và dữ liệu chi phí theo ngày từ Data_TongHop
       parseDailyAndCtrData(jsonTongHop);
+
+      // Parse doanh thu và đơn hàng theo từng ngày từ các sàn Affiliate
+      parseDailyOrdersData(jsonMO, jsonEC, jsonAP);
 
       parseSheetData(jsonDashboard);
       populateAccountFilter();
@@ -262,6 +275,72 @@
       const s = campStats[id];
       ctrMap[id] = s.totalClicks > 0 ? (s.weightedSum / s.totalClicks) : 0;
     });
+  }
+
+  // Parse dữ liệu đơn hàng & doanh thu từng ngày từ các sàn (MO, EC, AP)
+  function parseDailyOrdersData(jsonMO, jsonEC, jsonAP) {
+    dailyOrdersMap = {};
+
+    function addOrder(campId, dateStr, revenue) {
+      if (!campId || !dateStr) return;
+      const parsedDate = parseVnDate(dateStr);
+      if (!parsedDate) return;
+
+      if (!dailyOrdersMap[campId]) dailyOrdersMap[campId] = [];
+      dailyOrdersMap[campId].push({
+        date: parsedDate,
+        dateStr,
+        revenue: typeof revenue === 'number' && !isNaN(revenue) ? revenue : 0
+      });
+    }
+
+    // 1. Masoffer (Raw_MO): Sub1 cột 18, Ngày cột 27, Hoa hồng theo tỷ lệ cột 30 (hoặc cột 29)
+    if (jsonMO && jsonMO.table && jsonMO.table.rows) {
+      jsonMO.table.rows.forEach(r => {
+        const c = r.c;
+        if (!c) return;
+        const sub1 = String(c[18]?.v || '');
+        const match = sub1.match(/\b(2\d{10})\b/);
+        const campId = match ? match[1] : '';
+        const dateStr = c[27] ? String(c[27].f || c[27].v || '') : '';
+        const rev = typeof c[30]?.v === 'number' ? c[30].v : (typeof c[29]?.v === 'number' ? c[29].v : parseNum(c[30] || c[29]));
+        if (campId) {
+          addOrder(campId, dateStr, rev);
+        }
+      });
+    }
+
+    // 2. Ecomobi (Raw_EC): Sub1 cột 21, Ngày cột 31, Hoa hồng theo tỷ lệ cột 34 (hoặc cột 33)
+    if (jsonEC && jsonEC.table && jsonEC.table.rows) {
+      jsonEC.table.rows.forEach(r => {
+        const c = r.c;
+        if (!c) return;
+        const sub1 = String(c[21]?.v || '');
+        const match = sub1.match(/\b(2\d{10})\b/);
+        const campId = match ? match[1] : '';
+        const dateStr = c[31] ? String(c[31].f || c[31].v || '') : '';
+        const rev = typeof c[34]?.v === 'number' ? c[34].v : (typeof c[33]?.v === 'number' ? c[33].v : parseNum(c[34] || c[33]));
+        if (campId) {
+          addOrder(campId, dateStr, rev);
+        }
+      });
+    }
+
+    // 3. Adpia (Raw_AP): UTM/Affiliate User Id cột 11, Ngày cột 19 (hoặc cột 0), Hoa hồng theo tỷ lệ cột 22 (hoặc 21)
+    if (jsonAP && jsonAP.table && jsonAP.table.rows) {
+      jsonAP.table.rows.forEach(r => {
+        const c = r.c;
+        if (!c) return;
+        const utm = String(c[11]?.v || '');
+        const match = utm.match(/\b(2\d{10})\b/);
+        const campId = match ? match[1] : '';
+        const dateStr = c[19] ? String(c[19].f || c[19].v || '') : (c[0] ? String(c[0].f || c[0].v || '') : '');
+        const rev = typeof c[22]?.v === 'number' ? c[22].v : (typeof c[21]?.v === 'number' ? c[21].v : parseNum(c[22] || c[21]));
+        if (campId) {
+          addOrder(campId, dateStr, rev);
+        }
+      });
+    }
   }
 
   function setLoading(isLoading) {
@@ -414,16 +493,23 @@
         platform,
         cookieDays,
         cost,
+        originalCost: cost,
         clicks,
+        originalClicks: clicks,
         cpc,
         conv,
+        originalConv: conv,
         cr,
         ctr,
+        originalCtr: ctr,
         cpa,
         delayDays,
         revenue,
+        originalRevenue: revenue,
         profit,
+        originalProfit: profit,
         roas,
+        originalRoas: roas,
         note: displayNote,
         statusType
       });
@@ -504,35 +590,75 @@
       elLagStatusNotice.style.color = '#34d399';
     }
 
-    // Tính toán lại Chi phí, Clicks, CTR theo khoảng ngày đã chọn từ dailyStatsMap
+    // Tính toán lại Chi phí, Doanh thu, Clicks, CTR theo khoảng ngày đã chọn
     let hasDailyMatch = false;
     rawCampaigns.forEach(c => {
       const dailyList = dailyStatsMap[c.campId];
-      if (dailyList && dailyList.length > 0) {
-        let periodCost = 0;
-        let periodClicks = 0;
-        let sumWeightedCtr = 0;
-        let daysInRange = 0;
+      const ordersList = dailyOrdersMap[c.campId];
 
+      // 1. Tính toán chi phí, click, ctr theo khoảng ngày
+      let periodCost = 0;
+      let periodClicks = 0;
+      let sumWeightedCtr = 0;
+      let hasCostData = false;
+
+      if (dailyList && dailyList.length > 0) {
         dailyList.forEach(item => {
           if (item.date >= startDate && item.date <= endDate) {
             periodCost += item.cost;
             periodClicks += item.clicks;
             sumWeightedCtr += item.ctr * (item.clicks > 0 ? item.clicks : 1);
-            daysInRange++;
+            hasCostData = true;
           }
         });
+      }
 
-        if (daysInRange > 0) {
-          hasDailyMatch = true;
-          c.cost = periodCost;
-          c.clicks = periodClicks;
-          c.cpc = periodClicks > 0 ? (periodCost / periodClicks) : 0;
-          c.ctr = periodClicks > 0 ? (sumWeightedCtr / periodClicks) : 0;
-          c.profit = c.revenue - c.cost;
-          c.roas = c.cost > 0 ? (c.revenue / c.cost) : (c.revenue > 0 ? 99 : 0);
-          c.cr = c.clicks > 0 ? (c.conv / c.clicks) : 0;
-        }
+      // 2. Tính toán doanh thu và số đơn theo khoảng ngày từ các sàn Affiliate
+      let periodRevenue = 0;
+      let periodConv = 0;
+      let hasRevenueData = false;
+
+      if (ordersList && ordersList.length > 0) {
+        ordersList.forEach(item => {
+          if (item.date >= startDate && item.date <= endDate) {
+            periodRevenue += item.revenue;
+            periodConv++;
+            hasRevenueData = true;
+          }
+        });
+      }
+
+      if (hasCostData || hasRevenueData) {
+        hasDailyMatch = true;
+        c.cost = hasCostData ? periodCost : 0;
+        c.clicks = hasCostData ? periodClicks : 0;
+        c.cpc = c.clicks > 0 ? (c.cost / c.clicks) : 0;
+        c.ctr = c.clicks > 0 ? (sumWeightedCtr / c.clicks) : 0;
+
+        c.revenue = hasRevenueData ? periodRevenue : 0;
+        c.conv = hasRevenueData ? periodConv : 0;
+
+        c.profit = c.revenue - c.cost;
+        c.roas = c.cost > 0 ? (c.revenue / c.cost) : (c.revenue > 0 ? 99 : 0);
+        c.cr = c.clicks > 0 ? (c.conv / c.clicks) : 0;
+
+        // Cập nhật lại statusType sau khi tính lại lời lãi theo ngày
+        if (c.profit > 0 && c.roas >= 2) c.statusType = 'scaling';
+        else if (c.profit > 0) c.statusType = 'profitable';
+        else if (c.profit < 0) c.statusType = 'losing';
+        else c.statusType = 'normal';
+      } else {
+        // Nếu không có bất kỳ log chi phí hoặc doanh thu nào trong khoảng ngày này
+        c.cost = 0;
+        c.clicks = 0;
+        c.cpc = 0;
+        c.ctr = 0;
+        c.revenue = 0;
+        c.conv = 0;
+        c.profit = 0;
+        c.roas = 0;
+        c.cr = 0;
+        c.statusType = 'normal';
       }
     });
 
