@@ -20,7 +20,16 @@
     // Bệnh y tế thông thường không phải chủ đề 18+
     "psoriasis", "miom", "kista ovarium", "kista bartholin", "menstruasi", "tinea cruris", "anyang anyangan",
     "bab campur lendir", "mengencerkan lendir", "herpes di wajah", "perontok bulu yang aman untuk ibu hamil",
-    "papiloma di leher", "papiloma leher", "papiloma wajah", "papiloma di wajah",
+    "papiloma di leher", "papiloma leher", "papiloma wajah", "papiloma di wajah", "obat untuk kutil di leher",
+    "kutil di leher", "kutil di wajah", "lipoma", "lipoma di leher", "trigger finger", "jari macet",
+    "panu", "eksim", "ruam popok", "puting lecet", "pde5 inhibitor", "sinlik",
+    // Cơ khí, công cụ, gia dụng, linh kiện, đồ chơi trí tuệ
+    "rubik", "moyu", "meilong", "wd 40", "wd40", "semprot wd", "grease untuk bearing", "bearing",
+    "pisau potong", "drum plastik", "shell rimula", "oli submersible", "submersible",
+    // Mỹ phẩm, da liễu thông thường, thời trang đồ lót thông dụng
+    "nude gloss", "hera nude", "tally bra", "bra untuk payudara kecil", "house of underwear", "uomo underwear",
+    "brighty waxing", "waxing strip", "pisau cukur alis", "pembersih daki", "siku hitam", "hitam di paha",
+    "obat kelenjar di paha", "krim pemutih ketiak", "pemutih ketiak", "ketiak gatal",
     // Đồ gia dụng, công nghệ (ốp lưng điện thoại...)
     "oppo", "samsung", "iphone", "xiaomi", "casing", "bangku", "kursi"
   ].map(k => k.toLowerCase().trim()).filter(Boolean);
@@ -57,15 +66,15 @@
     "crotchless", "sheer bra", "see through", "bodystocking",
     // Mở rộng bổ sung: Bộ phận sinh dục & tiếng lóng nhạy cảm Indo
     "kontol", "mister p", "mrp", "oenis", "alat kelamin", "kemaluan",
-    "selangkangan", "bulu kemaluan", "kewanitaan", "vagi", "payudara",
+    "bulu kemaluan", "vagi",
     // Sản phẩm bôi trơn tình dục & mát xa
-    "pelicin", "pelumas", "female lubricant", "edible oil massage", "personal lubricant", "ky jelly",
+    "pelicin", "female lubricant", "edible oil massage", "personal lubricant", "ky jelly",
     "massage oil for couples",
     // Đồ chơi & thủ dâm nam/nữ
     "mainan pria", "alat kocok", "pengocok pria", "kocok pria", "coli", "minyak coli",
     "stroker", "buttplug", "cincin getar", "ring getar", "manstrubasi",
     // Trang phục & nội y gợi cảm
-    "baju dinas", "dinas malam", "baju tidur tipis", "thong", "g string", "cd g string", "underwear",
+    "baju dinas", "dinas malam", "baju tidur tipis", "thong", "g string", "cd g string",
     // Kích dục & trợ lực sinh lý
     "afrodisiak", "gairah wanita", "libido wanita", "perangsang nafsu", "katup mani",
     "tisu mejik", "super magic", "magicpower", "sutra dotted", "sutra hitam", "sutra warna hitam",
@@ -74,12 +83,12 @@
     "relove intimate", "prostanol", "africa black ant", "jamu spider", "viex v", "miscella v", "zahira sauda",
     "manjakani", "lacto v", "softex missy", "mister puss",
     // Bệnh xã hội / STDs & phụ khoa nhạy cảm
-    "kondiloma", "podofilotoksin", "kutil kelamin", "papiloma", "klamidia", "herpes",
+    "kondiloma", "podofilotoksin", "kutil kelamin", "klamidia",
     "keluar nanah", "penis bernanah", "keputihan", "rapet wangi", "gurahvagina",
     // Thuốc tăng kích cỡ & quan hệ
     "pembesar pria", "pembesar burung", "pembesar urat", "alat pemanjang p", "p oil",
     "vaginal tightening", "berhubungan intim", "saat hb", "obat loyo", "pengaman buat wanita",
-    "sperma pria", "buah pinang muda"
+    "sperma pria"
   ];
 
   // 3. Từ đa nghĩa: Chỉ kích hoạt 18+ khi đi kèm ngữ cảnh nhạy cảm
@@ -88,7 +97,12 @@
     "kondom fiesta", "fiesta condom", "fiesta lubricant",
     "g-string thong", "thong underwear", "celana thong", "quan thong",
     "lendir vagina", "lendir kelamin", "lendir sperma",
-    "silicone lubricant sex", "personal lubricant"
+    "silicone lubricant sex", "personal lubricant",
+    // Ngữ cảnh dầu bôi trơn tình dục
+    "pelumas miss v", "pelumas vagina", "pelumas sex", "pelumas anal", "pelumas intim",
+    // Ngữ cảnh làm đẹp vùng nhạy cảm / ngực
+    "pembesar payudara", "pengencang payudara", "besarkan payudara", "pembesar bokong",
+    "kembali perawan", "tongkat madura"
   ];
 
   const ALL_PATTERNS = [
