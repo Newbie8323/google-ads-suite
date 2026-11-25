@@ -604,6 +604,64 @@
     .text-right { text-align: right !important; }
     .text-center { text-align: center !important; }
     .font-mono { font-family: 'JetBrains Mono', monospace; }
+  
+    /* Nâng cấp: Drill-down Sub-Row & Momentum Badges */
+    .btn-toggle-sub {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-right: 6px;
+    }
+    .btn-toggle-sub:hover {
+      background: #3b82f6;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+    .btn-toggle-sub.expanded {
+      transform: rotate(90deg);
+      background: #3b82f6;
+      color: #fff;
+    }
+    .sub-table-row {
+      background: rgba(15, 23, 42, 0.45) !important;
+    }
+    .sub-table-box {
+      margin: 8px 12px 14px 34px;
+      padding: 12px 16px;
+      background: rgba(6, 11, 23, 0.85);
+      border: 1px dashed rgba(59, 130, 246, 0.35);
+      border-radius: 10px;
+    }
+    .momentum-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .momentum-bleeding { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .momentum-surging { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .momentum-stable { background: rgba(255, 255, 255, 0.06); color: #94a3b8; }
+    .rpc-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .rpc-safe { color: #34d399; }
+    .rpc-danger { color: #f43f5e; }
+
   </style>
 </head>
 
@@ -826,6 +884,8 @@
               <option value="PROFIT">Chỉ chiến dịch Lời (&gt; 0)</option>
               <option value="SCALING">Lời tốt (ROAS ≥ 2)</option>
               <option value="LOSS">Chiến dịch Lỗ (&lt; 0)</option>
+              <option value="BLEEDING">🔥 Cảnh báo: Đốt tiền 3 ngày gần đây</option>
+              <option value="SURGING">🚀 Tăng trưởng mạnh (3D Surging)</option>
               <option value="WARNING">Cảnh báo / Cắt lỗ</option>
             </select>
           </div>
@@ -859,7 +919,15 @@
             <line x1="3" y1="12" x2="3.01" y2="12"/>
             <line x1="3" y1="18" x2="3.01" y2="18"/>
           </svg>
-          <span>2. Danh Sách Chi Tiết (Chiến Dịch)</span>
+          <span>2. Danh Sách Chi Tiết (Chiến Dịch & AdGroup)</span>
+        </button>
+        <button type="button" class="view-tab-btn" id="btnTabProducts">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span>3. Cơ Cấu Loại Sản Phẩm Theo Chiến Dịch (Product Breakdown)</span>
         </button>
       </div>
 
@@ -963,6 +1031,7 @@
                   <th data-sort="roas" class="text-center" style="min-width: 80px;">ROAS <span class="sort-icon">⇅</span></th>
                   <th data-sort="clicks" class="text-right" style="min-width: 80px;">Clicks <span class="sort-icon">⇅</span></th>
                   <th data-sort="cpc" class="text-right" style="min-width: 80px;">CPC <span class="sort-icon">⇅</span></th>
+                  <th data-sort="rpc" class="text-right" style="min-width: 85px; color: #38bdf8;" title="Doanh thu / Click (Giá hòa vốn trần)">RPC (Hòa Vốn) <span class="sort-icon">⇅</span></th>
                   <th data-sort="cr" class="text-right" style="min-width: 75px;" title="Tỷ lệ chuyển đổi đơn hàng">CR <span class="sort-icon">⇅</span></th>
                   <th data-sort="conv" class="text-right" style="min-width: 75px;">Đơn <span class="sort-icon">⇅</span></th>
                   <th data-sort="ctr" class="text-right" style="min-width: 75px;" title="Tỷ lệ nhấp chuột Google Ads">CTR <span class="sort-icon">⇅</span></th>
@@ -982,6 +1051,43 @@
           </div>
         </div>
       </div>
+    
+      <!-- TAB 3: DANH SÁCH SẢN PHẨM / ĐƠN HÀNG SÀN ĐÃ BÁN -->
+      <div class="tab-view-content" id="tabContentProducts">
+        <div class="table-card-wrapper">
+          <div class="table-header-bar">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-sm">Phân Tích Cơ Cấu Loại Sản Phẩm & Tỷ Trọng Đơn Hàng Theo Từng Chiến Dịch</span>
+              <span class="acc-tag font-mono" id="productCount">0 sản phẩm</span>
+            </div>
+            <div class="text-xs text-muted flex items-center gap-3">
+              <span>💡 Nhận diện trực tiếp từ file raw: Hotel, Flight, Train, Bus, Tour/Klook, Shopee... xem loại nào chiếm nhiều nhất</span>
+            </div>
+          </div>
+          <div class="table-scroll-viewport">
+            <table class="data-dense-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;" class="text-center">#</th>
+                  <th style="min-width: 260px;">Chiến Dịch & Tài Khoản</th>
+                  <th class="text-right" style="min-width: 110px;">Chi Phí (Cost)</th>
+                  <th class="text-right" style="min-width: 110px;">Doanh Thu (Rev)</th>
+                  <th class="text-right" style="min-width: 110px;">Lợi Nhuận (P&L)</th>
+                  <th class="text-center" style="min-width: 80px;">ROAS</th>
+                  <th class="text-right" style="min-width: 80px;">Số Đơn</th>
+                  <th style="min-width: 280px;">Loại Sản Phẩm Chiếm Nhiều Nhất</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody">
+                <tr>
+                  <td colspan="7" class="text-center py-8 text-muted">Đang phân tích sản phẩm...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
