@@ -47,16 +47,16 @@ window.setAffViewMode = function(mode) {
 // =========================================================================
 // AFFILIATE REPORT HUB INTEGRATION (Massoffer, Ecomobi, Adpia -> Sheets)
 // =========================================================================
-const AFF_CONFIG_KEY = "AFF_ADS_TOOL_CONFIG_V2";
+const AFF_CONFIG_KEY = "AFF_ADS_TOOL_CONFIG_V3";
 const affDefaultConfig = {
   // Ưu tiên đọc từ config.local.js (chỉ có trên máy của bạn). Khi lên GitHub, biến này rỗng.
   scriptUrl: (typeof window !== 'undefined' && window.ADS_LOCAL_SECRETS && window.ADS_LOCAL_SECRETS.AFFILIATE_SCRIPT_URL)
     ? window.ADS_LOCAL_SECRETS.AFFILIATE_SCRIPT_URL
     : "",
   startCells: {
-    Raw_MO: "A5571",
-    Raw_EC: "A1399",
-    Raw_AP: "A549",
+    Raw_MO: "A6531",
+    Raw_EC: "A1829",
+    Raw_AP: "A720",
     Raw_gg: "A532",
     Raw_gg_detail: "A3947"
   }
@@ -99,9 +99,9 @@ window.toggleAffSettingsModal = function(show) {
   if (show) {
     const cfg = getAffConfig();
     document.getElementById("cfg-url").value = cfg.scriptUrl;
-    document.getElementById("cfg-mo-cell").value = (cfg.startCells && cfg.startCells.Raw_MO) || "A5571";
-    document.getElementById("cfg-ec-cell").value = (cfg.startCells && cfg.startCells.Raw_EC) || "A1399";
-    document.getElementById("cfg-ap-cell").value = (cfg.startCells && cfg.startCells.Raw_AP) || "A549";
+    document.getElementById("cfg-mo-cell").value = (cfg.startCells && cfg.startCells.Raw_MO) || "A6531";
+    document.getElementById("cfg-ec-cell").value = (cfg.startCells && cfg.startCells.Raw_EC) || "A1829";
+    document.getElementById("cfg-ap-cell").value = (cfg.startCells && cfg.startCells.Raw_AP) || "A720";
     const ggInput = document.getElementById("cfg-gg-cell");
     if (ggInput) ggInput.value = (cfg.startCells && cfg.startCells.Raw_gg) || "A532";
     const ggDetailInput = document.getElementById("cfg-gg-detail-cell");
@@ -157,9 +157,9 @@ function updateTopBarDisplay(cfg) {
   const statusEl = document.getElementById("dispEndpointStatus");
 
   if (cfg.startCells) {
-    if (moEl) moEl.innerText = cfg.startCells.Raw_MO || 'A1';
-    if (ecEl) ecEl.innerText = cfg.startCells.Raw_EC || 'A1';
-    if (apEl) apEl.innerText = cfg.startCells.Raw_AP || 'A1';
+    if (moEl) moEl.innerText = cfg.startCells.Raw_MO || 'A6531';
+    if (ecEl) ecEl.innerText = cfg.startCells.Raw_EC || 'A1829';
+    if (apEl) apEl.innerText = cfg.startCells.Raw_AP || 'A720';
     if (ggEl) ggEl.innerText = cfg.startCells.Raw_gg || 'A532';
     if (ggDetailEl) ggDetailEl.innerText = cfg.startCells.Raw_gg_detail || 'A3947';
   }

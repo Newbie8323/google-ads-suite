@@ -1,6 +1,10 @@
 # AGENT RULES & OPERATIONAL PRINCIPLES (AdsInsight Pro)
 
-> Nghiêm ngặt tuân thủ: Tiết kiệm token, Zero Hallucination, Zero Secret Leakage, Deep Modules.
+> [!CAUTION]
+> ## QUY TẮC TỐI THƯỢNG (BẮT BUỘC TUÂN THỦ TRƯỚC TIÊN - PRIORITY #0)
+> **NẾU KHÔNG HIỂU RÕ HOẶC THIẾU NGỮ CẢNH: TUYỆT ĐỐI KHÔNG ĐOÁN MÒ, PHẢI DỪNG LẠI VÀ HỎI LẠI CHO CHẮC CHẮN!**
+> 
+> - Khi yêu cầu mơ hồ, thiếu bằng chứng log/file, hoặc người dùng đề cập đến dự án khác ngoài `Google Ads` -> Bắt buộc dừng lại hỏi người dùng để làm rõ. CẤM tự ý đoán mò rồi ghi đè file hay tạo file lung tung trong dự án này!
 
 ---
 

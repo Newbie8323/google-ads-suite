@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -13,11 +13,16 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="../shared/css/style.css">
+  <link rel="stylesheet" href="../shared/css/style.css?v=1795680755">
   <script>
-    if (localStorage.getItem('sidebar_collapsed') === 'true') {
-      document.documentElement.classList.add('sidebar-is-collapsed');
-    }
+    (function() {
+      if (localStorage.getItem('sidebar_collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-is-collapsed');
+      }
+      if (localStorage.getItem('app_theme') === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+    })();
   </script>
   <script src="../shared/vendor/chart.umd.min.js"></script>
   <style>
@@ -662,6 +667,80 @@
     .rpc-safe { color: #34d399; }
     .rpc-danger { color: #f43f5e; }
 
+    /* Light Theme Adjustments */
+    body.light-theme .kpi-main-num {
+      color: #0f172a !important;
+    }
+    body.light-theme .chart-card-title {
+      color: #0f172a !important;
+    }
+    body.light-theme .chart-card-title span {
+      color: #0f172a !important;
+    }
+    body.light-theme .fin-kpi-card {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+    }
+    body.light-theme .lag-guide-banner {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      border-left: 4px solid #2563eb !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+    }
+    body.light-theme .lag-guide-banner span,
+    body.light-theme .lag-guide-banner .lag-guide-item {
+      color: #334155 !important;
+    }
+    body.light-theme .chart-card {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+    }
+    body.light-theme .chart-header h3,
+    body.light-theme .card-header-left h3 {
+      color: #0f172a !important;
+    }
+    body.light-theme .sub-table-box {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.light-theme .data-dense-table thead {
+      background: #f1f5f9 !important;
+    }
+    body.light-theme .data-dense-table th {
+      color: #475569 !important;
+      background: #f1f5f9 !important;
+      border-bottom: 1px solid #cbd5e1 !important;
+    }
+    body.light-theme .data-dense-table th:hover {
+      color: #0f172a !important;
+      background: #e2e8f0 !important;
+    }
+    body.light-theme .data-dense-table td {
+      color: #334155 !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+    body.light-theme .data-dense-table tbody tr:hover td {
+      background: rgba(37, 99, 235, 0.04) !important;
+    }
+    body.light-theme .acc-tag {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+    body.light-theme .delay-normal {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+    }
+    body.light-theme .badge-neutral {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+    }
+    body.light-theme .momentum-stable {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+    }
   </style>
 </head>
 
@@ -1102,3 +1181,4 @@
 </body>
 
 </html>
+

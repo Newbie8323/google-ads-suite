@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -9,11 +9,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../shared/css/style.css">
+  <link rel="stylesheet" href="../shared/css/style.css?v=1795680755">
   <script>
-    if (localStorage.getItem('sidebar_collapsed') === 'true') {
-      document.documentElement.classList.add('sidebar-is-collapsed');
-    }
+    (function() {
+      if (localStorage.getItem('sidebar_collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-is-collapsed');
+      }
+      if (localStorage.getItem('app_theme') === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+    })();
   </script>
   <!-- PapaParse Local Vendor (Offline First) -->
   <script src="../shared/vendor/papaparse.min.js"></script>
@@ -625,9 +630,9 @@
                       <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 6px;">
                           <span style="font-size: 1.1rem;">📋</span>
-                          <h4 class="font-bold text-white" style="margin: 0; font-size: 0.92rem;">Danh Sách Xem Trước</h4>
+                          <h4 class="font-bold text-main" style="margin: 0; font-size: 0.92rem;">Danh Sách Xem Trước</h4>
                         </div>
-                        <span class="badge-tag" id="garbagePreviewCount" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">0 từ</span>
+                        <span class="badge-tag garbage-preview-badge" id="garbagePreviewCount">0 từ</span>
                       </div>
                       <p class="text-xs text-muted" style="margin: 4px 0 0 0;">Xem trước danh sách từ khóa rác đang lọc để copy vào Google Ads</p>
                     </div>
@@ -862,3 +867,4 @@ https://shopee.co.id/inspirasi-shopee/cheat-gta-5/"></textarea>
   <script src="loc-cum-tu-tim-kiem.js"></script>
 </body>
 </html>
+

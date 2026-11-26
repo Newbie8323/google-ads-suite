@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -9,11 +9,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shared/css/style.css">
+  <link rel="stylesheet" href="shared/css/style.css?v=1795680755">
   <script>
-    if (localStorage.getItem('sidebar_collapsed') === 'true') {
-      document.documentElement.classList.add('sidebar-is-collapsed');
-    }
+    (function() {
+      if (localStorage.getItem('sidebar_collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-is-collapsed');
+      }
+      if (localStorage.getItem('app_theme') === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+    })();
   </script>
   <style>
     .hub-content-wrap {
@@ -204,6 +209,15 @@
     .tag-green { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; }
     .tag-purple { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
     .tag-orange { background: rgba(238, 77, 45, 0.2); color: #ff8a65; }
+
+    body.light-theme .tag-blue,
+    html.light-theme .tag-blue { background: rgba(37, 99, 235, 0.15) !important; color: #1e40af !important; font-weight: 700 !important; }
+    body.light-theme .tag-green,
+    html.light-theme .tag-green { background: rgba(16, 185, 129, 0.2) !important; color: #065f46 !important; font-weight: 700 !important; }
+    body.light-theme .tag-purple,
+    html.light-theme .tag-purple { background: rgba(124, 58, 237, 0.15) !important; color: #5b21b6 !important; font-weight: 700 !important; }
+    body.light-theme .tag-orange,
+    html.light-theme .tag-orange { background: rgba(234, 88, 12, 0.15) !important; color: #9a3412 !important; font-weight: 700 !important; }
 
     .tool-desc {
       font-size: 13.5px;

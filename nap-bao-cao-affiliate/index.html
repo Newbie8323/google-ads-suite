@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -13,11 +13,16 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="../shared/css/style.css">
+  <link rel="stylesheet" href="../shared/css/style.css?v=1795680755">
   <script>
-    if (localStorage.getItem('sidebar_collapsed') === 'true') {
-      document.documentElement.classList.add('sidebar-is-collapsed');
-    }
+    (function() {
+      if (localStorage.getItem('sidebar_collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-is-collapsed');
+      }
+      if (localStorage.getItem('app_theme') === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+    })();
   </script>
   <!-- SheetJS (xlsx) & PapaParse Local Vendor (Offline First) -->
   <script src="../shared/vendor/xlsx.full.min.js"></script>
@@ -49,7 +54,7 @@
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 1.1rem;">🔗</span>
               <div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">Liên Kết Google Sheets (Apps Script)
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Liên Kết Google Sheets (Apps Script)
                 </div>
                 <div
                   style="font-size: 0.72rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
@@ -84,15 +89,15 @@
                 <span style="font-size: 0.7rem; color: #34d399; font-weight: 700;">Hoa Hồng:</span>
                 <span
                   style="font-size: 0.74rem; background: rgba(59, 130, 246, 0.18); color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
-                  Raw_MO: <b id="dispMoCell">A5571</b>
+                  Raw_MO: <b id="dispMoCell">A6531</b>
                 </span>
                 <span
                   style="font-size: 0.74rem; background: rgba(245, 158, 11, 0.18); color: #fde047; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
-                  Raw_EC: <b id="dispEcCell">A1399</b>
+                  Raw_EC: <b id="dispEcCell">A1829</b>
                 </span>
                 <span
                   style="font-size: 0.74rem; background: rgba(244, 63, 94, 0.18); color: #fda4af; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
-                  Raw_AP: <b id="dispApCell">A549</b>
+                  Raw_AP: <b id="dispApCell">A720</b>
                 </span>
               </div>
             </div>
@@ -140,7 +145,7 @@
               </div>
               <div>
                 <h3
-                  style="font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
                   Chi Phí Quảng Cáo Google Ads
                   <span
                     style="font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">2
@@ -238,7 +243,7 @@
               </div>
               <div>
                 <h3
-                  style="font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
                   Báo Cáo Hoa Hồng Sàn Affiliate
                   <span
                     style="font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">3
@@ -411,7 +416,7 @@
                 style="font-size: 0.74rem; font-weight: 700; color: #60a5fa; display: block; margin-bottom: 4px;">Sàn
                 Massoffer</label>
               <input type="text" id="cfg-mo-cell" class="input-text text-center font-mono"
-                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A5571">
+                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A6531">
               <span
                 style="font-size: 0.68rem; color: #64748b; display: block; text-align: center; margin-top: 4px;">Tab:
                 Raw_MO</span>
@@ -422,7 +427,7 @@
                 style="font-size: 0.74rem; font-weight: 700; color: #fbbf24; display: block; margin-bottom: 4px;">Sàn
                 Ecomobi</label>
               <input type="text" id="cfg-ec-cell" class="input-text text-center font-mono"
-                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A1399">
+                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A1829">
               <span
                 style="font-size: 0.68rem; color: #64748b; display: block; text-align: center; margin-top: 4px;">Tab:
                 Raw_EC</span>
@@ -433,7 +438,7 @@
                 style="font-size: 0.74rem; font-weight: 700; color: #fb7185; display: block; margin-bottom: 4px;">Sàn
                 Adpia</label>
               <input type="text" id="cfg-ap-cell" class="input-text text-center font-mono"
-                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A549">
+                style="font-weight: 700; font-size: 0.9rem; width: 100%; padding: 6px 8px;" value="A720">
               <span
                 style="font-size: 0.68rem; color: #64748b; display: block; text-align: center; margin-top: 4px;">Tab:
                 Raw_AP</span>

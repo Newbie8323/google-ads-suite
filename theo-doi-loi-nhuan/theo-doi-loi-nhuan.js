@@ -1478,6 +1478,10 @@
     const costs = labels.map(k => Math.round(data[k].cost));
     const revenues = labels.map(k => Math.round(data[k].revenue));
 
+    const isLight = document.documentElement.classList.contains('light-theme') || (document.body && document.body.classList.contains('light-theme'));
+    const textMuted = isLight ? '#475569' : '#94a3b8';
+    const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+
     chartInstances.platformComparison = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -1505,7 +1509,7 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 12 } } },
+          legend: { labels: { color: textMuted, font: { family: 'Plus Jakarta Sans', size: 12 } } },
           tooltip: {
             callbacks: {
               label: (ctx) => `${ctx.dataset.label}: ${formatCurrency(ctx.raw)}`
@@ -1513,13 +1517,13 @@
           }
         },
         scales: {
-          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          x: { ticks: { color: textMuted }, grid: { color: gridColor } },
           y: {
             ticks: {
-              color: '#94a3b8',
+              color: textMuted,
               callback: (v) => (v >= 1000000 ? (v / 1000000).toFixed(1) + ' tr' : (v / 1000).toFixed(0) + ' k')
             },
-            grid: { color: 'rgba(255,255,255,0.05)' }
+            grid: { color: gridColor }
           }
         }
       }
@@ -1583,6 +1587,11 @@
     const labels = top6.length > 0 ? top6.map(c => c.campName.length > 24 ? c.campName.slice(0, 24) + '...' : c.campName) : ['Không có camp lời'];
     const profits = top6.length > 0 ? top6.map(c => Math.round(c.profit)) : [0];
 
+    const isLight = document.documentElement.classList.contains('light-theme') || (document.body && document.body.classList.contains('light-theme'));
+    const textColorY = isLight ? '#0f172a' : '#f8fafc';
+    const textMuted = isLight ? '#475569' : '#94a3b8';
+    const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+
     chartInstances.topProfitable = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -1611,12 +1620,12 @@
         scales: {
           x: {
             ticks: {
-              color: '#94a3b8',
+              color: textMuted,
               callback: (v) => (v >= 1000000 ? (v / 1000000).toFixed(1) + ' tr' : (v / 1000).toFixed(0) + ' k')
             },
-            grid: { color: 'rgba(255,255,255,0.05)' }
+            grid: { color: gridColor }
           },
-          y: { ticks: { color: '#f8fafc', font: { size: 11 } }, grid: { display: false } }
+          y: { ticks: { color: textColorY, font: { size: 11, weight: '600' } }, grid: { display: false } }
         }
       }
     });
@@ -1631,6 +1640,11 @@
     const losing6 = [...filteredCampaigns].filter(c => c.profit < 0).sort((a, b) => a.profit - b.profit).slice(0, 6);
     const labels = losing6.length > 0 ? losing6.map(c => c.campName.length > 24 ? c.campName.slice(0, 24) + '...' : c.campName) : ['Không có camp lỗ'];
     const losses = losing6.length > 0 ? losing6.map(c => Math.round(c.profit)) : [0];
+
+    const isLight = document.documentElement.classList.contains('light-theme') || (document.body && document.body.classList.contains('light-theme'));
+    const textColorY = isLight ? '#0f172a' : '#f8fafc';
+    const textMuted = isLight ? '#475569' : '#94a3b8';
+    const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
 
     chartInstances.topLosing = new Chart(ctx, {
       type: 'bar',
@@ -1660,16 +1674,23 @@
         scales: {
           x: {
             ticks: {
-              color: '#94a3b8',
+              color: textMuted,
               callback: (v) => (v <= -1000000 ? (v / 1000000).toFixed(1) + ' tr' : (v / 1000).toFixed(0) + ' k')
             },
-            grid: { color: 'rgba(255,255,255,0.05)' }
+            grid: { color: gridColor }
           },
-          y: { ticks: { color: '#f8fafc', font: { size: 11 } }, grid: { display: false } }
+          y: { ticks: { color: textColorY, font: { size: 11, weight: '600' } }, grid: { display: false } }
         }
       }
     });
   }
+
+  // Lắng nghe sự kiện chuyển đổi giao diện Sáng / Tối để vẽ lại biểu đồ mượt mà
+  window.addEventListener('appThemeChanged', () => {
+    if (filteredCampaigns && filteredCampaigns.length > 0) {
+      renderCharts();
+    }
+  });
 
   // Utilities
   function formatCurrency(val) {

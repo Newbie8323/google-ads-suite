@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -9,11 +9,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../shared/css/style.css">
+  <link rel="stylesheet" href="../shared/css/style.css?v=1795680755">
   <script>
-    if (localStorage.getItem('sidebar_collapsed') === 'true') {
-      document.documentElement.classList.add('sidebar-is-collapsed');
-    }
+    (function() {
+      if (localStorage.getItem('sidebar_collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-is-collapsed');
+      }
+      if (localStorage.getItem('app_theme') === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+    })();
   </script>
   <!-- SheetJS & PapaParse Local Vendor (Offline First) -->
   <script src="../shared/vendor/xlsx.full.min.js"></script>
@@ -198,6 +203,32 @@
       opacity: 1;
       color: #ee4d2d;
     }
+
+    /* Light Theme Adjustments */
+    body.light-theme .tab-pill-btn:hover {
+      color: #0f172a;
+    }
+    body.light-theme .th-sort-header:hover {
+      color: #0f172a;
+    }
+    body.light-theme .input-date-custom {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      color-scheme: light !important;
+    }
+    body.light-theme div[style*="background: rgba(30, 41, 59, 0.6)"] {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      color: #475569 !important;
+    }
+    body.light-theme tr[style*="background: #1e293b"] {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme tr[style*="background: #1e293b"] td {
+      color: #0f172a !important;
+    }
   </style>
 </head>
 <body class="dark-theme theme-shopee-orange">
@@ -225,14 +256,14 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px; margin-bottom: 22px;">
           
           <!-- KHỐI 1: GOOGLE SPREADSHEET (TỰ ĐỘNG) -->
-          <div style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-md); padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
+          <div class="shopee-source-card source-sheet" style="border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-md); padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
             <div>
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
                     NGUỒN 1
                   </span>
-                  <span style="font-weight: 700; color: #f8fafc; font-size: 0.95rem;">Google Spreadsheet 2.0 (Tự động)</span>
+                  <span class="source-card-title" style="font-weight: 700; font-size: 0.95rem;">Google Spreadsheet 2.0 (Tự động)</span>
                 </div>
                 <span class="pulse-indicator" style="background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
               </div>
@@ -253,14 +284,14 @@
           </div>
 
           <!-- KHỐI 2: FILE ORDER DETAIL (BÓC TÁCH SẢN PHẨM) -->
-          <div style="background: linear-gradient(145deg, rgba(238, 77, 45, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(238, 77, 45, 0.35); border-radius: var(--radius-md); padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
+          <div class="shopee-source-card source-order" style="border: 1px solid rgba(238, 77, 45, 0.35); border-radius: var(--radius-md); padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
             <div>
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="background: rgba(238, 77, 45, 0.2); color: #ff8a65; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
                     NGUỒN 2
                   </span>
-                  <span style="font-weight: 700; color: #f8fafc; font-size: 0.95rem;">File Order Detail Shopee (.csv)</span>
+                  <span class="source-card-title" style="font-weight: 700; font-size: 0.95rem;">File Order Detail Shopee (.csv)</span>
                 </div>
                 <span class="pulse-indicator" style="background: #ee4d2d; box-shadow: 0 0 8px #ee4d2d;"></span>
               </div>
@@ -648,3 +679,4 @@
   <script src="phan-tich-san-pham-shopee.js?v=4.0"></script>
 </body>
 </html>
+

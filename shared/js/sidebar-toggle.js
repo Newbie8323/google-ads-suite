@@ -1,6 +1,6 @@
 // =========================================================================
-// SHARED SIDEBAR COLLAPSE CONTROLLER
-// Quản lý việc thu gọn / mở rộng thanh menu sidebar dùng chung cho toàn bộ web
+// SHARED SIDEBAR COLLAPSE & THEME CONTROLLER
+// Quản lý việc thu gọn/mở rộng thanh menu sidebar và Chế độ Giao diện Sáng/Tối
 // =========================================================================
 
 (function() {
@@ -26,11 +26,69 @@
     document.documentElement.classList.add('sidebar-is-collapsed');
   }
 
+  // Khôi phục theme đã lưu (mặc định dark nếu chưa lưu)
+  const savedTheme = getSafeStorage('app_theme') || 'dark';
+  function applyThemeClass(theme) {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light-theme');
+      document.documentElement.classList.remove('dark-theme');
+      if (document.body) {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+      }
+    } else {
+      document.documentElement.classList.remove('light-theme');
+      document.documentElement.classList.add('dark-theme');
+      if (document.body) {
+        document.body.classList.remove('light-theme');
+        document.body.classList.add('dark-theme');
+      }
+    }
+  }
+  applyThemeClass(savedTheme);
+
+  // Cập nhật icon trên nút đổi theme
+  function updateThemeButtonUI(theme) {
+    const btnTheme = document.getElementById('btnToggleTheme');
+    if (!btnTheme) return;
+    const sunIcon = btnTheme.querySelector('.sun-icon');
+    const moonIcon = btnTheme.querySelector('.moon-icon');
+    if (theme === 'light') {
+      if (sunIcon) sunIcon.style.display = 'none';
+      if (moonIcon) moonIcon.style.display = 'block';
+      btnTheme.title = 'Chuyển sang giao diện Tối (Ctrl + Shift + D)';
+    } else {
+      if (sunIcon) sunIcon.style.display = 'block';
+      if (moonIcon) moonIcon.style.display = 'none';
+      btnTheme.title = 'Chuyển sang giao diện Sáng (Ctrl + Shift + D)';
+    }
+  }
+
   // Bật lại transition mượt mà sau khi trang đã render xong trạng thái ban đầu
   window.initSidebarToggleEvent = function() {
     const sidebar = document.querySelector('.sidebar');
     const btnToggle = document.getElementById('btnToggleSidebar');
+    const btnTheme = document.getElementById('btnToggleTheme');
     if (!sidebar) return;
+
+    // Đồng bộ theme lên body khi body đã sẵn sàng
+    const currentTheme = getSafeStorage('app_theme') || 'dark';
+    applyThemeClass(currentTheme);
+    updateThemeButtonUI(currentTheme);
+
+    if (btnTheme && !btnTheme.dataset.bound) {
+      btnTheme.dataset.bound = 'true';
+      btnTheme.addEventListener('click', () => {
+        const activeIsLight = document.documentElement.classList.contains('light-theme');
+        const nextTheme = activeIsLight ? 'dark' : 'light';
+        setSafeStorage('app_theme', nextTheme);
+        applyThemeClass(nextTheme);
+        updateThemeButtonUI(nextTheme);
+
+        // Kích hoạt custom event để các component vẽ biểu đồ (Chart.js) có thể vẽ lại màu phù hợp
+        window.dispatchEvent(new CustomEvent('appThemeChanged', { detail: { theme: nextTheme } }));
+      });
+    }
 
     if (isCollapsed) {
       sidebar.classList.add('collapsed');
@@ -69,7 +127,9 @@
         }
       });
 
-      // Lắng nghe phím tắt tiện ích: Ctrl + B hoặc phím '[' để thu gọn/mở rộng sidebar
+      // Lắng nghe phím tắt tiện ích:
+      // Ctrl + B hoặc phím '[': thu gọn/mở rộng sidebar
+      // Ctrl + Shift + D hoặc 'T' (khi không focus input): chuyển theme Sáng / Tối
       if (!window.__sidebarShortcutBound) {
         window.__sidebarShortcutBound = true;
         document.addEventListener('keydown', (e) => {
@@ -80,6 +140,9 @@
           if ((e.ctrlKey && e.key.toLowerCase() === 'b') || e.key === '[') {
             e.preventDefault();
             btnToggle.click();
+          } else if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd')) {
+            e.preventDefault();
+            if (btnTheme) btnTheme.click();
           }
         });
       }
